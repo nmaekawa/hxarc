@@ -9,12 +9,21 @@ class Config(object):
     SECRET_KEY = os.environ.get('HXARC_SECRET', 'secret-key')
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))
+
     BCRYPT_LOG_ROUNDS = 13
+
     DEBUG_TB_ENABLED = False  # Disable Debug toolbar
     DEBUG_TB_INTERCEPT_REDIRECTS = False
+
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    ASSETS_DEBUG = True  # do not bundle/minify static assets
     WEBPACK_MANIFEST_PATH = 'webpack/manifest.json'
+
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    LOG_CONFIG = os.environ.get('HXARC_LOG_CONFIG', 'logging.yaml')
+    UPLOAD_FOLDER = os.environ.get('HXARC_UPLOAD_FOLDER', PROJECT_ROOT)
 
 
 class ProdConfig(Config):
