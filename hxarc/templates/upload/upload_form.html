@@ -2,14 +2,14 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="container-narrow">
-  <h1>Upload</h1>
+  <h1>upload</h1>
     <br/>
     <form id="uploadForm" class="form form-register" method="POST"
         action="" role="form" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-group">
-                {{form.upfile.label}}
-                {{form.upfile(placeholder="upload", class_="form-control")}}
+                {{form.course_export.label}}
+                {{form.course_export(class_="form-control")}}
             </div>
             <p><input class="btn btn-default btn-submit" type="submit" value="upload"></p>
     </form>

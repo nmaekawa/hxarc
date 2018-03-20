@@ -3,6 +3,7 @@
 import os
 import logging
 import logging.config
+import yaml
 
 from flask import flash
 
@@ -31,3 +32,15 @@ def setup_logging(
         logging.config.dictConfig(config)
     else:
         logging.basicConfig(level=default_level)
+
+
+def get_exts(filename):
+    """
+    expects a filename that ends with something like `<filename>.tar.gz`
+
+    returns the 2 rightmost extension as string `<ext>.<ext>`
+    """
+    if filename.count('.') > 1:
+        (garbage, ext1, ext2) = filename.rsplit('.', 2)
+        return '{}.{}'.format(ext1.lower(), ext2.lower())
+    return None

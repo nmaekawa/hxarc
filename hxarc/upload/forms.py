@@ -6,12 +6,21 @@ from flask_wtf.file import FileField
 from flask_wtf.file import FileRequired
 
 
+# TODO: make this configurable
+UPLOAD_FIELD_LABEL = 'course export tarball'
+UPLOAD_FIELD_ALLOWED_EXTENSIONS = ['tar.gz']
+
 class UploadForm(FlaskForm):
     """Upload form."""
-    upfile = FileField(
-        label='course export "tar.gz"',
+    course_export = FileField(
+        label=UPLOAD_FIELD_LABEL,
         validators=[
             FileRequired(),
-            FileAllowed(['gz'], 'tar.gzip course exports'),
-        ],
-    )
+            FileAllowed(
+                UPLOAD_FIELD_ALLOWED_EXTENSIONS,
+                'course export must have extension `tar.gz`'),
+        ])
+
+
+
+

@@ -27,7 +27,7 @@ def home():
         if form.validate_on_submit():
             login_user(form.user)
             flash('You are logged in.', 'success')
-            redirect_url = request.args.get('next') or url_for('user.members')
+            redirect_url = request.args.get('next') or url_for('public.home')
             return redirect(redirect_url)
         else:
             flash_errors(form)
@@ -43,11 +43,9 @@ def logout():
     return redirect(url_for('public.home'))
 
 
-@blueprint.route('/register/', methods=['GET', 'POST'])
-def register():
-    """Register new user."""
-    return redirect(url_for('public.home'))
-
+#@blueprint.route('/register/', methods=['GET', 'POST'])
+#def register():
+#    """Register new user."""
 #    form = RegisterForm(request.form)
 #    if form.validate_on_submit():
 #        User.create(username=form.username.data, email=form.email.data, password=form.password.data, active=True)
@@ -58,8 +56,8 @@ def register():
 #    return render_template('public/register.html', form=form)
 
 
-@blueprint.route('/about/')
-def about():
-    """About page."""
+@blueprint.route('/credits/')
+def credits():
+    """credits page."""
     form = LoginForm(request.form)
-    return render_template('public/about.html', form=form)
+    return render_template('public/credits.html', form=form)

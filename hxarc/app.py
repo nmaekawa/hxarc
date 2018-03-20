@@ -5,6 +5,7 @@ from flask import Flask, render_template
 from hxarc import commands, public, user, upload
 from hxarc.extensions import bcrypt, cache, csrf_protect, db, debug_toolbar, login_manager, migrate, webpack
 from hxarc.settings import ProdConfig
+from hxarc.utils import setup_logging
 
 
 def create_app(config_object=ProdConfig):
@@ -14,6 +15,7 @@ def create_app(config_object=ProdConfig):
     """
     app = Flask(__name__.split('.')[0])
     app.config.from_object(config_object)
+    setup_logging(app)
     register_extensions(app)
     register_blueprints(app)
     register_errorhandlers(app)
