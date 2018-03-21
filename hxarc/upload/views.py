@@ -45,8 +45,8 @@ def upload():
         f.save(upfilename)
         f.close()
 
-        command = '{} {} {}'.format(
-            current_app.config['SCRIPT_PATH'], upfilename, updir)
+        command = '{} {}'.format(
+            current_app.config['SCRIPT_PATH'], upfilename)
         logger.debug('--------------- command: {}'.format(command))
 
         try:
@@ -56,9 +56,10 @@ def upload():
                 shell=True
             )
         except subprocess.CalledProcessError as e:
-            logger.debug('ERROR ERROR ERROR ERROR --- result([{}] - {})'.format(
-                e.returncode, e.output))
-            raise e
+            msg = 'ERROR ERROR ERROR ERROR --- result([{}] - {})'.format(
+                e.returncode, e.output)
+            logger.debug(msg)
+            return render_template('upload/error.html', message=msg)
 
         # success
         logger.debug('xxxxxxxxxxxxxxxxxxxxxxxx --- result({})'.format(result))
@@ -78,4 +79,4 @@ def download_result(upload_id):
     logger.debug('####################### in uploaded_file: id is {}'.format(upload_id))
     logger.debug('####################### upload_id type is {}'.format(type(upload_id)))
     updir = os.path.join(current_app.config['UPLOAD_DIR'], upload_id)
-    return send_from_directory(updir, 'result.tsv')
+    return send_from_directory(updir, 'result.tar.gz')

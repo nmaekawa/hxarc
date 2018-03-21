@@ -4,6 +4,7 @@
 See: http://webtest.readthedocs.org/
 """
 from flask import url_for
+import pytest
 
 from hxarc.user.models import User
 
@@ -65,6 +66,7 @@ class TestLoggingIn:
         assert 'Unknown user' in res
 
 
+@pytest.mark.skip(reason='not implemented')
 class TestRegistering:
     """Register a user."""
 

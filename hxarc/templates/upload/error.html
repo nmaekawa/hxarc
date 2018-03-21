@@ -1,0 +1,19 @@
+
+{% extends "layout.html" %}
+
+{% block page_title %}Server error{% endblock %}
+
+{% block content %}
+<div class="jumbotron">
+    <div class="text-center">
+        <h1>500</h1>
+        <p>Error during processing you input file. Here is the output:</p>
+            <pre>
+                <code>
+                {{ message }}
+                </code>
+            </pre>
+    </div>
+</div>
+{% endblock %}
+

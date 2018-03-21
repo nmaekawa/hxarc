@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 """Test forms."""
+import pytest
 
 from hxarc.public.forms import LoginForm
 from hxarc.user.forms import RegisterForm
 
 
+@pytest.mark.skip(reason='not implemented')
 class TestRegisterForm:
     """Register form."""
 
