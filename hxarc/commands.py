@@ -9,6 +9,9 @@ from flask import current_app
 from flask.cli import with_appcontext
 from werkzeug.exceptions import MethodNotAllowed, NotFound
 
+from hxarc.user.models import User
+
+
 HERE = os.path.abspath(os.path.dirname(__file__))
 PROJECT_ROOT = os.path.join(HERE, os.pardir)
 TEST_PATH = os.path.join(PROJECT_ROOT, 'tests')
@@ -124,3 +127,29 @@ def urls(url, order):
 
     for row in rows:
         click.echo(str_template.format(*row[:column_length]))
+
+
+@click.command()
+@click.option('--usr', required=True)
+@click.option('--pwd', required=True)
+@click.option('--email', required=True)
+@click.option('--is_admin', is_flag=True, flag_value=True, default=True)
+@with_appcontext
+def create_user(usr, pwd, email, is_admin):
+    """register user in app."""
+
+    u = User.query.filter_by(username=usr).first()
+    if u is None:
+        u = User.create(username=usr, email=email, password=pwd, active=True)
+
+        if is_admin:
+            u.is_admin = True
+            u.save()
+    else:
+        print('user ({}) already exists'.format(usr))
+        exit(1)
+
+
+
+
+
