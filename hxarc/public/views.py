@@ -3,6 +3,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
 
+from hxarc import __version__ as hxarc_version
 from hxarc.extensions import login_manager
 from hxarc.public.forms import LoginForm
 from hxarc.user.forms import RegisterForm
@@ -31,7 +32,8 @@ def home():
             return redirect(redirect_url)
         else:
             flash_errors(form)
-    return render_template('public/home.html', form=form)
+    return render_template('public/home.html', form=form,
+                           version=hxarc_version)
 
 
 @blueprint.route('/logout/')
@@ -60,4 +62,5 @@ def logout():
 def credits():
     """credits page."""
     form = LoginForm(request.form)
-    return render_template('public/credits.html', form=form)
+    return render_template('public/credits.html', form=form,
+                           version=hxarc_version)

@@ -15,6 +15,7 @@ from flask import send_from_directory
 from flask import url_for
 from flask_login import login_required
 
+from hxarc import __version__ as hxarc_version
 from hxarc.upload.forms import UploadForm
 from hxarc.utils import flash_errors
 from hxarc.utils import get_exts
@@ -59,7 +60,8 @@ def upload():
             msg = 'ERROR ERROR ERROR ERROR --- result([{}] - {})'.format(
                 e.returncode, e.output)
             logger.debug(msg)
-            return render_template('upload/error.html', message=msg)
+            return render_template('upload/error.html', message=msg,
+                                   version=hxarc_version)
 
         # success
         logger.debug('xxxxxxxxxxxxxxxxxxxxxxxx --- result({})'.format(result))
@@ -68,7 +70,8 @@ def upload():
 
     else:
         flash_errors(form)
-        return render_template('upload/upload_form.html', form=form)
+        return render_template('upload/upload_form.html', form=form,
+                               version=hxarc_version)
 
 
 
