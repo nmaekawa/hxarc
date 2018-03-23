@@ -10,10 +10,9 @@ if dotenv_path:
 
 
 from flask.helpers import get_debug_flag
-
-from hxarc.app import create_app
 from hxarc.settings import DevConfig, ProdConfig
-
 CONFIG = DevConfig if get_debug_flag() else ProdConfig
 
+
+from hxarc.app import create_app
 app = create_app(CONFIG)

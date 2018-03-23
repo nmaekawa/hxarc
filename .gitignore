@@ -50,4 +50,4 @@ env/
 
 # webpack-built files
 /hxarc/static/build/
-/hxarc/webpack/manifest.json
+#/hxarc/webpack/manifest.json
