@@ -27,7 +27,8 @@ module.exports = {
     ],
   },
   output: {
-    path: path.join(__dirname, 'hxarc', 'static', 'build'),
+    /* path: path.join(__dirname, 'hxarc', 'static', 'build'), */
+    path: path.join(__dirname, 'hxarc', 'static'),
     publicPath: `${publicHost}/static/build/`,
     filename: '[name].[hash].js',
     chunkFilename: '[id].[hash].js',
