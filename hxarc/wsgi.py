@@ -15,4 +15,4 @@ CONFIG = DevConfig if get_debug_flag() else ProdConfig
 
 
 from hxarc.app import create_app
-app = create_app(CONFIG)
+application = create_app(CONFIG)
