@@ -55,7 +55,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6'
     ],
-    install_requires=requirements,
+    install_requires=[],
     tests_requires=test_requirements,
     zip_safe=False,
 )
