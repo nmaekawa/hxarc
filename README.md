@@ -1,43 +1,38 @@
-===============================
 hxarc
 ===============================
 
 web version of https://github.com/Colin-Fredericks/hx-py/tree/master/XML_utilities
 
 
-Quickstart
-----------
+quickstart
+==========
 
-First, set your app's secret key as an environment variable. For example,
-add the following to ``.bashrc`` or ``.bash_profile``.
-
-.. code-block:: bash
-
-    export HXARC_SECRET='something-really-secret'
-
-Run the following commands to bootstrap your environment ::
-
-    git clone https://github.com/nmaekawa/hxarc
-    cd hxarc
-    pip install -r requirements/dev.txt
-    npm install
-    npm start  # run the webpack dev server and flask server using concurrently
-
-You will see a pretty welcome screen.
-
-In general, before running shell commands, set the ``FLASK_APP`` and
-``FLASK_DEBUG`` environment variables ::
-
-    export FLASK_APP=autoapp.py
-    export FLASK_DEBUG=1
-
-Once you have installed your DBMS, run the following to create your app's
-database tables and perform the initial migration ::
-
-    flask db init
-    flask db migrate
-    flask db upgrade
-    npm start
+    # clone this repo
+    $> git clone https://github.com/nmaekawa/hxarc
+    
+    # create and activate virtualenv
+    $> cd hxarc
+    $hxarc> virtualenv -p python3 venv
+    $hxarc> source venv/bin/activate
+    $(venv) hxarc>
+    
+    # install pip requirements
+    $(venv) hxarc> pip install -r requirements/dev.txt
+    
+    # turn on debug mode
+    $(venv) hxarc> export FLASK_DEBUG=1
+    
+    # run migration; it creates a dev.db sqlite file
+    $(venv) hxarc> FLASK_APP=./hxarc/wsgi.py flask db upgrade
+    
+    # create a user
+    $(venv) hxarc> FLASK_APP=./hxarc/wsgi.py flask create_user --usr user --pwd password --email user@user.com
+    
+    # start webapp
+    $(venv) hxarc> FLASK_APP=./hxarc/wsgi.py flask run
+    
+    # access webapp on http://localhost:5000
+    # login as user:password
 
 
 Deployment

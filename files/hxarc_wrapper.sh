@@ -19,7 +19,7 @@ echo "***** about to process input file ${input_file}"
 result_dir=/tmp/${input_id}/result
 mkdir -p ${result_dir}
 
-# here is where the script should be called
+# here is where the hxpy script should be called
 # pretend to do some processing and generate output
 for file in $(find ${input_dir} -name "*.json" -print)
 do
