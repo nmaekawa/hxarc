@@ -2,7 +2,7 @@
 """The app module, containing the app factory function."""
 from flask import Flask, render_template
 
-from hxarc import commands, public, user, upload
+from hxarc import commands, public, user, upload, maintenance
 from hxarc.extensions import bcrypt, cache, csrf_protect, db, debug_toolbar, login_manager, migrate, webpack
 from hxarc.settings import ProdConfig
 from hxarc.utils import setup_logging
@@ -42,6 +42,7 @@ def register_blueprints(app):
     app.register_blueprint(public.views.blueprint)
     app.register_blueprint(user.views.blueprint)
     app.register_blueprint(upload.views.blueprint)
+    app.register_blueprint(maintenance.views.blueprint)
     return None
 
 
