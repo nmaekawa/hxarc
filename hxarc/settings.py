@@ -35,7 +35,7 @@ class Config(object):
     # pull process script from environ
     SCRIPT_PATH = os.environ.get(
         'HXARC_SCRIPT_PATH',
-        os.path.join(PROJECT_ROOT, 'bin/hxarc_wrapper.sh'))
+        os.path.join(PROJECT_ROOT, 'files/hxarc_wrapper.sh'))
 
 
 class ProdConfig(Config):
