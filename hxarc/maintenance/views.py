@@ -24,9 +24,9 @@ from hxarc.utils import get_exts
 blueprint = Blueprint('maintenance', __name__, url_prefix='/maintenance', static_folder='../static')
 
 
-@blueprint.route('/', methods=['GET'])
+@blueprint.route('/<string:action>', methods=['GET'])
 @login_required
-def info():
+def info(action):
     """print git sha of subproc and webapp."""
     logger = logging.getLogger(__name__)
     logger.info('--- this is a log message from app: {}[{}]'.format(__name__,
@@ -36,9 +36,28 @@ def info():
         return render_template('403.html', version=hxarc_version)
 
     # authorized to check this
-    command = 'cd $(dirname {}) && git rev-parse --short HEAD'.format(
-        current_app.config['SCRIPT_PATH'])
+    script_dir = os.path.dirname(current_app.config['SCRIPT_PATH'])
+    if action == 'info':
+        command = 'cd {} && git rev-parse --short HEAD'.format(script_dir)
+    elif action.startswith('pull:'):
+        revision = action[5:]
+        if is_hexa(revision):
+            command = 'cd {} && git fetch origin && git checkout {}'.format(
+                script_dir, revision)
+        else:
+            return render_template(
+                'upload/error.html',
+                message='invalid revision sha',
+                version=hxarc_version)
+    else:
+        return render_template(
+            'upload/error.html',
+            message='unknown maintenace task({})'.format(action),
+            version=hxarc_version)
+
+
     logger.debug('--------------- command: {}'.format(command))
+
 
     try:
         result = subprocess.check_output(
@@ -63,3 +82,9 @@ def info():
         script_version=result.decode('utf-8', 'backslashreplace').strip())
 
 
+def is_hexa(value):
+    try:
+        is_hexa = int(value, 16)
+    except ValueError:
+        return False
+    return True
