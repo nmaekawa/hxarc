@@ -29,8 +29,6 @@ blueprint = Blueprint('upload', __name__, url_prefix='/upload', static_folder='.
 def upload():
     """upload form for course export."""
     logger = logging.getLogger(__name__)
-    logger.info('--- this is a log message from app: {}'.format(__name__))
-
     form = UploadForm()
 
     if form.validate_on_submit():
@@ -48,7 +46,6 @@ def upload():
 
         command = '{} {}'.format(
             current_app.config['SCRIPT_PATH'], upfilename)
-        logger.debug('--------------- command: {}'.format(command))
 
         try:
             result = subprocess.check_output(
@@ -57,14 +54,19 @@ def upload():
                 shell=True
             )
         except subprocess.CalledProcessError as e:
-            msg = 'ERROR ERROR ERROR ERROR --- result([{}] - {})'.format(
+            output_html = e.output.decode(
+                'utf-8', 'ignore').strip().replace('\n', '<br/>')
+            msg = 'exit code[{}] - {}'.format(
                 e.returncode, e.output)
-            logger.debug(msg)
-            return render_template('upload/error.html', message=msg,
-                                   version=hxarc_version)
+            logger.debug('COMMAND: ({}) -- {}'.format(
+                command,
+                e.output.decode('utf-8', 'ignore').strip(),
+            ))
+            return render_template('upload/error.html', version=hxarc_version)
 
         # success
-        logger.debug('xxxxxxxxxxxxxxxxxxxxxxxx --- result({})'.format(result))
+        logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
+            command, result.decode('utf-8', 'ignore').strip()))
 
         return redirect(url_for('upload.download_result', upload_id=upid))
 
@@ -78,8 +80,8 @@ def upload():
 @blueprint.route('/<string:upload_id>/', methods=['GET'])
 @login_required
 def download_result(upload_id):
-    logger = logging.getLogger(__name__)
-    logger.debug('####################### in uploaded_file: id is {}'.format(upload_id))
-    logger.debug('####################### upload_id type is {}'.format(type(upload_id)))
     updir = os.path.join(current_app.config['UPLOAD_DIR'], upload_id)
     return send_from_directory(updir, 'result.tar.gz')
+
+
+
