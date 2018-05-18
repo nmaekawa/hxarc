@@ -68,7 +68,8 @@ def upload():
         logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
             command, result.decode('utf-8', 'ignore').strip()))
 
-        return redirect(url_for('upload.download_result', upload_id=upid))
+        return render_template('upload/result_link.html',
+                               upload_id=upid, version=hxarc_version)
 
     else:
         flash_errors(form)
@@ -76,12 +77,14 @@ def upload():
                                version=hxarc_version)
 
 
-
 @blueprint.route('/<string:upload_id>/', methods=['GET'])
 @login_required
 def download_result(upload_id):
     updir = os.path.join(current_app.config['UPLOAD_DIR'], upload_id)
-    return send_from_directory(updir, 'result.tar.gz')
+    return send_from_directory(updir, 'result.tar.gz',
+                               mimetype='application/gzip',
+                               as_attachment=True,
+                               attachment_filename='hxarc_{}.tar.gz'.format(upload_id))
 
 
 
