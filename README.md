@@ -1,7 +1,7 @@
 hxarc
 ===============================
 
-web version of https://github.com/Colin-Fredericks/hx-py/tree/master/XML_utilities
+web version of https://github.com/Colin-Fredericks/hx_util
 
 
 quickstart
