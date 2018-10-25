@@ -111,30 +111,30 @@ def download_result(upload_id):
 def get_subproc_version(script_path):
     """execute wrapper script to get subproc version."""
 
-        command = '{} version_only'.format(script_path)
+    command = '{} version_only'.format(script_path)
 
-        try:
-            result = subprocess.check_output(
-                command,
-                stderr=subprocess.STDOUT,
-                shell=True
-            )
-        except subprocess.CalledProcessError as e:
-            output_html = e.output.decode(
-                'utf-8', 'ignore').strip().replace('\n', '<br/>')
-            msg = 'exit code[{}] - {}'.format(
-                e.returncode, e.output)
-            logger.debug('COMMAND: ({}) -- {}'.format(
-                command,
-                e.output.decode('utf-8', 'ignore').strip(),
-            ))
-            return 'version not available'
+    try:
+        result = subprocess.check_output(
+            command,
+            stderr=subprocess.STDOUT,
+            shell=True
+        )
+    except subprocess.CalledProcessError as e:
+        output_html = e.output.decode(
+            'utf-8', 'ignore').strip().replace('\n', '<br/>')
+        msg = 'exit code[{}] - {}'.format(
+            e.returncode, e.output)
+        logger.debug('COMMAND: ({}) -- {}'.format(
+            command,
+            e.output.decode('utf-8', 'ignore').strip(),
+        ))
+        return 'version not available'
 
-        # success
-        version = result.decode('utf-8', 'ignore').strip()
-        logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
-            command, version))
+    # success
+    version = result.decode('utf-8', 'ignore').strip()
+    logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
+        command, version))
 
-        return version
+    return version
 
 
