@@ -36,7 +36,7 @@ def upload():
         subproc_version = get_subproc_version(
             current_app.config['SCRIPT_PATH'])
         logging.getLogger(__name__).info('{} uploaded, version {}'.format(
-            __name__, subproc_version)
+            __name__, subproc_version))
 
     if form.validate_on_submit():
         f = form.course_export.data
