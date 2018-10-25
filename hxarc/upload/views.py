@@ -112,6 +112,7 @@ def download_result(upload_id):
 def get_subproc_version(script_path):
     """execute wrapper script to get subproc version."""
 
+    logger = logging.getLogger(__name__)
     command = '{} version_only'.format(script_path)
 
     try:
@@ -134,7 +135,7 @@ def get_subproc_version(script_path):
     # success
     version = result.decode('utf-8', 'ignore').strip()
     logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
-        command, version))
+            command, version))
 
     return version
 
