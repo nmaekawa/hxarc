@@ -21,6 +21,7 @@ from hxarc.utils import flash_errors
 from hxarc.utils import get_exts
 
 
+subproc_version = None
 blueprint = Blueprint('upload', __name__, url_prefix='/upload', static_folder='../static')
 
 
@@ -30,6 +31,13 @@ def upload():
     """upload form for course export."""
     logger = logging.getLogger(__name__)
     form = UploadForm()
+
+    global subproc_version
+    if subproc_version is None:
+        subproc_version = get_subproc_version(
+            current_app.config['SCRIPT_PATH'])
+        logging.getLogger(__name__).info('{} uploaded, version {}'.format(
+            __name__, subproc_version))
 
     if form.validate_on_submit():
         f = form.course_export.data
@@ -62,19 +70,32 @@ def upload():
                 command,
                 e.output.decode('utf-8', 'ignore').strip(),
             ))
-            return render_template('upload/error.html', version=hxarc_version)
+            return render_template(
+                'upload/error.html',
+                version=hxarc_version,
+                subproc_version=subproc_version,
+            )
 
         # success
         logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
             command, result.decode('utf-8', 'ignore').strip()))
 
-        return render_template('upload/result_link.html',
-                               upload_id=upid, version=hxarc_version)
+        return render_template(
+            'upload/result_link.html',
+            upload_id=upid,
+            version=hxarc_version,
+            subproc_version=subproc_version,
+        )
 
     else:
         flash_errors(form)
-        return render_template('upload/upload_form.html', form=form,
-                               version=hxarc_version)
+        return render_template(
+            'upload/upload_form.html',
+            form=form,
+            version=hxarc_version,
+            subproc_version=subproc_version
+        )
+
 
 
 @blueprint.route('/<string:upload_id>/', methods=['GET'])
@@ -86,5 +107,36 @@ def download_result(upload_id):
                                as_attachment=True,
                                attachment_filename='hxarc_{}.tar.gz'.format(upload_id))
 
+
+
+def get_subproc_version(script_path):
+    """execute wrapper script to get subproc version."""
+
+    logger = logging.getLogger(__name__)
+    command = '{} version_only'.format(script_path)
+
+    try:
+        result = subprocess.check_output(
+            command,
+            stderr=subprocess.STDOUT,
+            shell=True
+        )
+    except subprocess.CalledProcessError as e:
+        output_html = e.output.decode(
+            'utf-8', 'ignore').strip().replace('\n', '<br/>')
+        msg = 'exit code[{}] - {}'.format(
+            e.returncode, e.output)
+        logger.debug('COMMAND: ({}) -- {}'.format(
+            command,
+            e.output.decode('utf-8', 'ignore').strip(),
+        ))
+        return 'version not available'
+
+    # success
+    version = result.decode('utf-8', 'ignore').strip()
+    logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
+            command, version))
+
+    return version
 
 
