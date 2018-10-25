@@ -32,6 +32,7 @@ def upload():
     logger = logging.getLogger(__name__)
     form = UploadForm()
 
+    global subproc_version
     if subproc_version is None:
         subproc_version = get_subproc_version(
             current_app.config['SCRIPT_PATH'])
