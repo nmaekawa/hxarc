@@ -37,6 +37,9 @@ class Config(object):
         'HXARC_SCRIPT_PATH',
         os.path.join(PROJECT_ROOT, 'files/hxarc_wrapper.sh'))
 
+    # no time limit, because we have very large uploads
+    WTF_CSRF_TIME_LIMIT = None
+
 
 class ProdConfig(Config):
     """Production configuration."""
