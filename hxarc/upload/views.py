@@ -21,6 +21,9 @@ from hxarc.utils import flash_errors
 from hxarc.utils import get_exts
 
 
+subproc_version = subproc_version()
+logging.getLogger(__name__).info('{} uploaded, version {}'.format(
+    __name__, subproc_version)
 blueprint = Blueprint('upload', __name__, url_prefix='/upload', static_folder='../static')
 
 
@@ -62,19 +65,32 @@ def upload():
                 command,
                 e.output.decode('utf-8', 'ignore').strip(),
             ))
-            return render_template('upload/error.html', version=hxarc_version)
+            return render_template(
+                'upload/error.html',
+                version=hxarc_version,
+                subproc_version=subproc_version,
+            )
 
         # success
         logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
             command, result.decode('utf-8', 'ignore').strip()))
 
-        return render_template('upload/result_link.html',
-                               upload_id=upid, version=hxarc_version)
+        return render_template(
+            'upload/result_link.html',
+            upload_id=upid,
+            version=hxarc_version,
+            subproc_version=subproc_version,
+        )
 
     else:
         flash_errors(form)
-        return render_template('upload/upload_form.html', form=form,
-                               version=hxarc_version)
+        return render_template(
+            'upload/upload_form.html',
+            form=form,
+            version=hxarc_version,
+            subproc_version=subproc_version
+        )
+
 
 
 @blueprint.route('/<string:upload_id>/', methods=['GET'])
@@ -86,5 +102,35 @@ def download_result(upload_id):
                                as_attachment=True,
                                attachment_filename='hxarc_{}.tar.gz'.format(upload_id))
 
+
+
+def subproc_version():
+    """execute wrapper script to get subproc version."""
+
+        command = '{} version_only'.format(current_app.config['SCRIPT_PATH'])
+
+        try:
+            result = subprocess.check_output(
+                command,
+                stderr=subprocess.STDOUT,
+                shell=True
+            )
+        except subprocess.CalledProcessError as e:
+            output_html = e.output.decode(
+                'utf-8', 'ignore').strip().replace('\n', '<br/>')
+            msg = 'exit code[{}] - {}'.format(
+                e.returncode, e.output)
+            logger.debug('COMMAND: ({}) -- {}'.format(
+                command,
+                e.output.decode('utf-8', 'ignore').strip(),
+            ))
+            return 'version not available'
+
+        # success
+        version = result.decode('utf-8', 'ignore').strip()
+        logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
+            command, version))
+
+        return version
 
 
