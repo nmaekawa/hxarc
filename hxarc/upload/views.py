@@ -21,9 +21,7 @@ from hxarc.utils import flash_errors
 from hxarc.utils import get_exts
 
 
-subproc_version = subproc_version()
-logging.getLogger(__name__).info('{} uploaded, version {}'.format(
-    __name__, subproc_version)
+subproc_version = None
 blueprint = Blueprint('upload', __name__, url_prefix='/upload', static_folder='../static')
 
 
@@ -33,6 +31,12 @@ def upload():
     """upload form for course export."""
     logger = logging.getLogger(__name__)
     form = UploadForm()
+
+    if subproc_version is None:
+        subproc_version = get_subproc_version(
+            current_app.config['SCRIPT_PATH'])
+        logging.getLogger(__name__).info('{} uploaded, version {}'.format(
+            __name__, subproc_version)
 
     if form.validate_on_submit():
         f = form.course_export.data
@@ -104,10 +108,10 @@ def download_result(upload_id):
 
 
 
-def subproc_version():
+def get_subproc_version(script_path):
     """execute wrapper script to get subproc version."""
 
-        command = '{} version_only'.format(current_app.config['SCRIPT_PATH'])
+        command = '{} version_only'.format(script_path)
 
         try:
             result = subprocess.check_output(
