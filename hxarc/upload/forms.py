@@ -8,7 +8,7 @@ from flask_wtf.file import FileRequired
 
 # TODO: make this configurable
 UPLOAD_FIELD_LABEL = 'course export tarball'
-UPLOAD_FIELD_ALLOWED_EXTENSIONS = ['tar.gz']
+UPLOAD_FIELD_ALLOWED_EXTENSIONS = ['tar.gz', 'tar']
 
 class UploadForm(FlaskForm):
     """Upload form."""
