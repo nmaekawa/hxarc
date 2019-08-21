@@ -1,0 +1,23 @@
+
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="{% static "css/main.css" %}">
+<title>Server Error</title>
+</head>
+<body>
+<div>
+    <header>
+        <h3>hxarc</h3>
+    </header>
+    <main id="error-msg">
+        <h4>500</h4>
+        <p>Error during processing your input file.</p>
+        <p>(hx_util v{{ subproc_version }})</p>
+    </main>
+</div>
+
+</body>
+</html>
+
