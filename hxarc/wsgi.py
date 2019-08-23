@@ -16,7 +16,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hxarc.settings.prod")
 
 # if dotenv file, load it
 dotenv_path = os.environ.get(
-    'HXARC_DOTENV_PATH', 'hxarc.settings.prod')
+    'HXARC_DOTENV_PATH', None)
 if dotenv_path:
     load_dotenv(dotenv_path)
 

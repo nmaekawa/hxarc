@@ -148,7 +148,7 @@ LOGGING = {
             'handlers': ['console'],
             'propagate': True
         },
-        'hxlti_dj': {
+        'hxlti': {
             'level': 'DEBUG',
             'handlers': ['console'],
             'propagate': True
@@ -179,6 +179,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.environ.get(
     'HXARC_STATIC_ROOT', os.path.join(BASE_DIR, 'static/'))
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.environ.get(
+    'HXARC_MEDIA_ROOT', os.path.join(BASE_DIR, 'media/'))
 
 # hxlti app settings
 # assuming ssl terminator in front of django (nginx reverse proxy)
@@ -197,9 +200,9 @@ HXLTI_REDIS_URL = os.environ.get(
 CORS_ORIGIN_ALLOW_ALL = True  # accept requests from anyone
 
 
-HXARC_UPLOAD_DIR = os.environ.get(
-    #'HXARC_UPLOAD_DIR', os.path.join(BASE_DIR, 'uploads'))
-    'HXARC_UPLOAD_DIR', BASE_DIR)
+# django checks if it's trying to write files (uploads) outside
+# BASE_DIR or MEDIA_ROOT...
+HXARC_UPLOAD_DIR = MEDIA_ROOT_DIR
 HXARC_UPLOAD_FILENAME = os.environ.get(
     'HXARC_UPLOAD_FILENAME', 'export')
 HXARC_SCRIPT_PATH = os.environ.get(

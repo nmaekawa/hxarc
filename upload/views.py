@@ -53,18 +53,11 @@ def upload_file(request):
     form = UploadFileForm(request.POST, request.FILES)
     if form.is_valid():
         tarball = request.FILES['course_tarball']
-
-        logger.info('---------------- type({}) name({})'.format(
-            type(tarball), tarball.name
-        ))
-
         fs = FileSystemStorage()
 
         # save uploaded file in a subdir of HXARC_UPLOAD_DIR;
         # this subdir is a uuid, so pretty sure it's unique named
         ext = get_exts(tarball.name)
-
-        logger.info('----------------- get_exts({})'.format(ext))
 
         upid = str(uuid.uuid4())
         updir = '{}/{}'.format(settings.HXARC_UPLOAD_DIR, upid)
@@ -113,7 +106,7 @@ def upload_file(request):
         #    version=hxarc_version,
         #    subproc_version=subproc_version,
         #)
-        return render(request, 'upload.html', {'form': form})
+        return render(request, 'upload/upload_form.html', {'form': form})
 
 
 
