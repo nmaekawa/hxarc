@@ -202,7 +202,7 @@ CORS_ORIGIN_ALLOW_ALL = True  # accept requests from anyone
 
 # django checks if it's trying to write files (uploads) outside
 # BASE_DIR or MEDIA_ROOT...
-HXARC_UPLOAD_DIR = MEDIA_ROOT_DIR
+HXARC_UPLOAD_DIR = MEDIA_ROOT
 HXARC_UPLOAD_FILENAME = os.environ.get(
     'HXARC_UPLOAD_FILENAME', 'export')
 HXARC_SCRIPT_PATH = os.environ.get(
