@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        {% load staticfiles %}
+        <link rel="stylesheet" type="text/css" href="{% static "css/main.css" %}">
+        <title>{% block title %}hxarc{% endblock %}</title>
+    </head>
+    <body>
+    <header>
+        <h3>hxarc v{{ hxarc_version }}</h3>
+    </header>
+
+    {% block content %}{% endblock %}
+
+    </body>
+</html>

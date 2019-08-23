@@ -6,6 +6,8 @@ import uuid
 
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from django.http import Http404
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
@@ -66,7 +68,7 @@ def upload_file(request):
             updir, '{}.{}'.format(settings.HXARC_UPLOAD_FILENAME, ext))
         actual_filename = fs.save(upfilename, tarball)
 
-        logger.debug('uploaded file({}) as ({})'.format(
+        logger.info('uploaded file({}) as ({})'.format(
             tarball.name, upfilename))
 
 
@@ -84,7 +86,7 @@ def upload_file(request):
                 'utf-8', 'ignore').strip().replace('\n', '<br/>')
             msg = 'exit code[{}] - {}'.format(
                 e.returncode, e.output)
-            logger.debug('COMMAND: ({}) -- {}'.format(
+            logger.warning('COMMAND: ({}) -- {}'.format(
                 command,
                 e.output.decode('utf-8', 'ignore').strip(),
             ))
@@ -96,18 +98,33 @@ def upload_file(request):
             )
 
         # success
-        logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
+        logger.info('COMMAND: ({}) -- exit code[0] --- result({})'.format(
             command, result.decode('utf-8', 'ignore').strip()))
+    else:
+        form = UploadFileForm()
 
-        #return render(
-        #    request,
-        #    'upload/result_link.html',
-        #    upload_id=upid,
-        #    version=hxarc_version,
-        #    subproc_version=subproc_version,
-        #)
-        return render(request, 'upload/upload_form.html', {'form': form})
+    return render(
+        request,
+        'upload/result_link.html',
+        {
+            'upload_id': upid,
+        #version=hxarc_version,
+        #subproc_version=subproc_version
+        }
+    )
 
-
+def download_result(request, upload_id):
+    upfile = os.path.join(settings.HXARC_UPLOAD_DIR, upload_id, 'result.tar.gz')
+    if os.path.exists(upfile):
+        with open(upfile, 'rb') as fh:
+            response = HttpResponse(
+                fh.read(),
+                content_type='application/gzip',
+            )
+            response['Content-Disposition'] = 'inline; filename=' + \
+                    'hxarc_{}.tar.gz'.format(upload_id)
+        return response
+    else:
+        return Http404;
 
 

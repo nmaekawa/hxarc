@@ -6,6 +6,9 @@
   text-align: center;
 }
 
+#main-download {
+  text-align: center;
+}
 
 input[type="submit"] {
   font-family: Arial, sans-sarif;
