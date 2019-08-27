@@ -199,6 +199,9 @@ HXLTI_REDIS_URL = os.environ.get(
 #
 CORS_ORIGIN_ALLOW_ALL = True  # accept requests from anyone
 
+# send cookies even if cross-site
+CSRF_COOKIE_SAMESITE = None
+SESSION_COOKIE_SAMESITE = None
 
 # django checks if it's trying to write files (uploads) outside
 # BASE_DIR or MEDIA_ROOT...

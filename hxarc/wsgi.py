@@ -12,12 +12,14 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hxarc.settings.prod")
 
 # if dotenv file, load it
 dotenv_path = os.environ.get(
     'HXARC_DOTENV_PATH', None)
 if dotenv_path:
     load_dotenv(dotenv_path)
+
+# set default if not in environment
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hxarc.settings.prod")
 
 application = get_wsgi_application()

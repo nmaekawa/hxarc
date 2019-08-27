@@ -12,6 +12,7 @@ from django.shortcuts import render
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
 
+from hxarc import __version__ as hxarc_version
 from hxlti.decorators import require_lti_launch
 from .forms import UploadFileForm
 from .util import get_exts
@@ -24,11 +25,17 @@ logger = logging.getLogger(__name__)
 @require_lti_launch
 def lti_upload(request):
 
+    logger.debug('--------- hxarc_version=({})'.format(hxarc_version))
+
     form = UploadFileForm()
     return render(
-        request, 'upload/upload_form.html', {
+        request,
+        'upload/upload_form.html',
+        {
             'form': form,
-        })
+            'hxarc_version': hxarc_version,
+        }
+    )
 
 
 def upload_file(request):
@@ -40,14 +47,16 @@ def upload_file(request):
         logger.info('{} - version {}'.format(__name__, subproc_version))
     '''
 
+
     if request.method != 'POST':
         #flash_errors(form)
         form = UploadFileForm()
         return render(
             request,
             'upload/upload_form.html',
-            { 'form': form,
-            #version=hxarc_version,
+            {
+                'form': form,
+                'hxarc_version': hxarc_version,
             #subproc_version=subproc_version
             }
         )
@@ -93,8 +102,10 @@ def upload_file(request):
             return render(
                 request,
                 'upload/error.html',
-                #version=hxarc_version,
+                {
+                    'hxarc_version': hxarc_version,
                 #subproc_version=subproc_version,
+                }
             )
 
         # success
@@ -108,7 +119,7 @@ def upload_file(request):
         'upload/result_link.html',
         {
             'upload_id': upid,
-        #version=hxarc_version,
+            'hxarc_version': hxarc_version,
         #subproc_version=subproc_version
         }
     )
