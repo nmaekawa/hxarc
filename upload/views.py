@@ -45,9 +45,10 @@ def landing(request):
 def lti_upload(request):
 
     # fetch or create lti user
-    user_id = request.POST['user_id']
-    user, created = User.objects.get_or_create(username=user_id,
-                                               email='{}@hx.edu'.format(user_id))
+    # counting it's in edx, and properly configured to send username
+    username = request.POST['lis_person_sourceid']
+    user, created = User.objects.get_or_create(username=username,
+                                               email='{}@hx.edu'.format(username))
 
     # login user
     login(request, user)
