@@ -5,8 +5,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('', views.landing, name='landing'),
     path('launch/', views.lti_upload, name='launch'),
-    #path('upload/', views.upload_file, {'subproc_name': 'hx_util'}, name='upload'),
     path('result/<slug:upload_id>/', views.download_result, name='result'),
 ]
 
@@ -14,7 +14,7 @@ urlpatterns = [
 for subproc in settings.HXARC_SUBPROCS:
     urlpatterns.append(path('{}/'.format(subproc),
                             views.upload_file,
-                            {'subproc_name': subproc},
+                            {'subproc_id': subproc},
                             name=subproc,
                            ))
 

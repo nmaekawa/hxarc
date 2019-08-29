@@ -27,6 +27,17 @@ from .util import unpack_custom_parameters
 subproc_version = None
 logger = logging.getLogger(__name__)
 
+def landing(request):
+    return render(
+        request,
+        'upload/landing.html',
+        {
+            'hxarc_version': hxarc_version,
+            'hxarc_subprocs': settings.HXARC_SUBPROCS,
+        }
+    )
+
+
 @csrf_exempt
 @xframe_options_exempt  # allows rendering in Canvas|edx frame
 @require_lti_launch
@@ -43,13 +54,11 @@ def lti_upload(request):
     request.session.modified = True
 
     form = UploadFileForm()
-    fake_url = reverse('sample')
     return render(
         request,
         'upload/landing.html',
         {
             'hxarc_version': hxarc_version,
-            'form_action': fake_url,
             'hxarc_subprocs': settings.HXARC_SUBPROCS,
         }
     )
@@ -62,6 +71,7 @@ def upload_file(request, subproc_id='sample'):
     global subproc_version
     if subproc_version is None:
         subproc_version = {}
+    if subproc_id not in subproc_version:
         subproc_version[subproc_id] = get_subproc_version(
             subproc_conf['wrapper_path'])
         logger.info('{} - version {}'.format(__name__, subproc_version))
