@@ -24,6 +24,7 @@ from .forms import UploadFileForm
 from .util import get_exts
 from .util import unpack_custom_parameters
 
+subproc_version = None
 logger = logging.getLogger(__name__)
 
 @csrf_exempt
@@ -31,63 +32,40 @@ logger = logging.getLogger(__name__)
 @require_lti_launch
 def lti_upload(request):
 
-    logger.debug('--------- hxarc_version=({})'.format(hxarc_version))
-    logger.debug('--------- HXARC_SUBPROC_APPS=({})'.format(settings.HXARC_SUBPROC_APPS))
-    logger.debug('--------- session=({})'.format(request.session))
-    logger.debug('--------- session keys({})'.format(request.session.keys()))
-    logger.debug('--------- session user_id=({})'.format(request.session['_auth_user_id']))
-
-
-    # login user
+    # fetch or create lti user
     user_id = request.POST['user_id']
     user, created = User.objects.get_or_create(username=user_id,
                                                email='{}@hx.edu'.format(user_id))
-    if created:
-        logger.debug('--------- user CREATED({})'.format(user))
-        user.set_unusable_password()
-        user.save()
-    else:
-        logger.debug('--------- user FETCHED({})'.format(user))
 
-    user.backend = 'django.contrib.auth.backend.ModelBackend'
+    # login user
     login(request, user)
     request.session['user_logged'] = user.id
     request.session.modified = True
 
-
-    logger.debug('*********** ({}) logged in?({})'.format(
-        request.user,
-        request.user.is_authenticated))
-
     form = UploadFileForm()
-    fake_url = reverse('fake')
+    fake_url = reverse('sample')
     return render(
         request,
         'upload/landing.html',
         {
             'hxarc_version': hxarc_version,
             'form_action': fake_url,
-            'hxarc_apps': settings.HXARC_SUBPROC_APPS,
+            'hxarc_subprocs': settings.HXARC_SUBPROCS,
         }
     )
 
-def upload_file(request, subproc_name='fake'):
-    '''
+
+@login_required
+def upload_file(request, subproc_id='sample'):
+    subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
+
     global subproc_version
     if subproc_version is None:
-        subproc_version = get_subproc_version(
-            settings.HXARC_SCRIPT_PATH, 'hx_util')
+        subproc_version = {}
+        subproc_version[subproc_id] = get_subproc_version(
+            subproc_conf['wrapper_path'])
         logger.info('{} - version {}'.format(__name__, subproc_version))
-    '''
-    logger.debug('--------- session=({})'.format(request.session))
-    logger.debug('--------- session keys({})'.format(request.session.keys()))
-    logger.debug('--------- session user_id=({})'.format(request.session['_auth_user_id']))
-    logger.debug('--------- user_logged=({})'.format(request.session['user_logged']))
 
-
-    logger.debug('*********** ({}) logged in?({})'.format(
-        request.session['_auth_user_id'],
-        request.user.id))
 
     if request.method != 'POST':
         #flash_errors(form)
@@ -96,13 +74,12 @@ def upload_file(request, subproc_name='fake'):
             request,
             'upload/upload_form.html',
             {
-                'form': form,
                 'hxarc_version': hxarc_version,
-                'form_action': reverse(subproc_name),
-                'hxarc_apps': settings.HXARC_SUBPROC_APPS,
-                'app_name': subproc_name,
-                'app_version': 'XX.YY.ZZ',
-            #subproc_version=subproc_version
+                'hxarc_subprocs': settings.HXARC_SUBPROCS,
+                'form': form,
+                'form_action': reverse(subproc_id),
+                'subproc_name': subproc_conf['display_name'],
+                'subproc_version': subproc_version[subproc_id],
             }
         )
 
@@ -127,7 +104,7 @@ def upload_file(request, subproc_name='fake'):
 
 
         command = '{} {}'.format(
-            settings.HXARC_SUBPROC_APPS[subproc_name]['wrapper_path'],
+            subproc_conf['wrapper_path'],
             upfilename
         )
 
@@ -152,8 +129,7 @@ def upload_file(request, subproc_name='fake'):
                 'upload/error.html',
                 {
                     'hxarc_version': hxarc_version,
-                'hxarc_apps': settings.HXARC_SUBPROC_APPS,
-                #subproc_version=subproc_version,
+                    'hxarc_subprocs': settings.HXARC_SUBPROCS,
                 }
             )
 
@@ -169,12 +145,12 @@ def upload_file(request, subproc_name='fake'):
         {
             'upload_id': upid,
             'hxarc_version': hxarc_version,
-            'hxarc_apps': settings.HXARC_SUBPROC_APPS,
-            'app_name': subproc_name,
-            'app_version': 'XX.YY.ZZ',
-        #subproc_version=subproc_version
+            'hxarc_subprocs': settings.HXARC_SUBPROCS,
+            'subproc_name': subproc_conf['display_name'],
+            'subproc_version': subproc_version[subproc_id],
         }
     )
+
 
 @login_required
 def download_result(request, upload_id):
@@ -191,4 +167,34 @@ def download_result(request, upload_id):
     else:
         return Http404;
 
+
+def get_subproc_version(script_path):
+    """execute wrapper script to get subproc version."""
+
+    logger = logging.getLogger(__name__)
+    command = '{} version_only'.format(script_path)
+
+    try:
+        result = subprocess.check_output(
+            command,
+            stderr=subprocess.STDOUT,
+            shell=True
+        )
+    except subprocess.CalledProcessError as e:
+        output_html = e.output.decode(
+            'utf-8', 'ignore').strip().replace('\n', '<br/>')
+        msg = 'exit code[{}] - {}'.format(
+            e.returncode, e.output)
+        logger.debug('COMMAND: ({}) -- {}'.format(
+            command,
+            e.output.decode('utf-8', 'ignore').strip(),
+        ))
+        return 'version not available'
+
+    # success
+    version = result.decode('utf-8', 'ignore').strip()
+    logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
+            command, version))
+
+    return version
 

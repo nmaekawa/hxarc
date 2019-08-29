@@ -215,14 +215,14 @@ HXARC_SCRIPT_PATH = json.loads(os.environ.get(
     'HXARC_SCRIPT_PATH',
     '{"fake": "' + wrapper_fake_path + '"}'))
 
-HXARC_SUBPROC_APPS = {
-    'fake': {
+HXARC_SUBPROCS = {
+    'sample': {  # subproc_id
         'wrapper_path': os.path.join(BASE_DIR, 'files/hxarc_wrapper.sh'),
         'display_name': 'fake',
     },
 }
-extra_subproc_apps = json.loads(os.environ.get('HXARC_SUBPROC_APPS', '{}'))
-HXARC_SUBPROC_APPS.update(extra_subproc_apps)
+extra_subprocs = json.loads(os.environ.get('HXARC_SUBPROCS', '{}'))
+HXARC_SUBPROCS.update(extra_subprocs)
 
 
 

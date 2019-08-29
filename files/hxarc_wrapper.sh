@@ -8,6 +8,14 @@ input_file=${1}
 input_dir=$(dirname ${1})
 input_id=$(basename ${input_dir})  # assumes input file has a unique parent dir
 
+# subproc's pkg version, in this case using django
+if [ ${1} == 'version_only' ]
+then
+    SCRIPT_VERSION=$(pip show django | grep 'Version' | cut -d ' ' -f 2)
+    echo $SCRIPT_VERSION
+    exit 0
+fi
+
 echo "***** untar/ungzip input file ${input_file}"
 # untar uploaded file
 tar xzf ${input_file} -C ${input_dir}

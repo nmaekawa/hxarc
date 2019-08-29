@@ -9,7 +9,7 @@
     <header>
         <p>hxarc v{{ hxarc_version }}
         |
-        {% for key,values in hxarc_apps.items %}
+        {% for key,values in hxarc_subprocs.items %}
         <a href="{% url key %}">{{ values.display_name }}</a> |
         {% endfor %}
         </p>
