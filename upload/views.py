@@ -5,12 +5,18 @@ import subprocess
 import uuid
 
 from django.conf import settings
+from django.contrib.auth import authenticate
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
 from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
+
 
 from hxarc import __version__ as hxarc_version
 from hxlti.decorators import require_lti_launch
@@ -26,19 +32,46 @@ logger = logging.getLogger(__name__)
 def lti_upload(request):
 
     logger.debug('--------- hxarc_version=({})'.format(hxarc_version))
+    logger.debug('--------- HXARC_SUBPROC_APPS=({})'.format(settings.HXARC_SUBPROC_APPS))
+    logger.debug('--------- session=({})'.format(request.session))
+    logger.debug('--------- session keys({})'.format(request.session.keys()))
+    logger.debug('--------- session user_id=({})'.format(request.session['_auth_user_id']))
+
+
+    # login user
+    user_id = request.POST['user_id']
+    user, created = User.objects.get_or_create(username=user_id,
+                                               email='{}@hx.edu'.format(user_id))
+    if created:
+        logger.debug('--------- user CREATED({})'.format(user))
+        user.set_unusable_password()
+        user.save()
+    else:
+        logger.debug('--------- user FETCHED({})'.format(user))
+
+    user.backend = 'django.contrib.auth.backend.ModelBackend'
+    login(request, user)
+    request.session['user_logged'] = user.id
+    request.session.modified = True
+
+
+    logger.debug('*********** ({}) logged in?({})'.format(
+        request.user,
+        request.user.is_authenticated))
 
     form = UploadFileForm()
+    fake_url = reverse('fake')
     return render(
         request,
-        'upload/upload_form.html',
+        'upload/landing.html',
         {
-            'form': form,
             'hxarc_version': hxarc_version,
+            'form_action': fake_url,
+            'hxarc_apps': settings.HXARC_SUBPROC_APPS,
         }
     )
 
-
-def upload_file(request):
+def upload_file(request, subproc_name='fake'):
     '''
     global subproc_version
     if subproc_version is None:
@@ -46,7 +79,15 @@ def upload_file(request):
             settings.HXARC_SCRIPT_PATH, 'hx_util')
         logger.info('{} - version {}'.format(__name__, subproc_version))
     '''
+    logger.debug('--------- session=({})'.format(request.session))
+    logger.debug('--------- session keys({})'.format(request.session.keys()))
+    logger.debug('--------- session user_id=({})'.format(request.session['_auth_user_id']))
+    logger.debug('--------- user_logged=({})'.format(request.session['user_logged']))
 
+
+    logger.debug('*********** ({}) logged in?({})'.format(
+        request.session['_auth_user_id'],
+        request.user.id))
 
     if request.method != 'POST':
         #flash_errors(form)
@@ -57,6 +98,10 @@ def upload_file(request):
             {
                 'form': form,
                 'hxarc_version': hxarc_version,
+                'form_action': reverse(subproc_name),
+                'hxarc_apps': settings.HXARC_SUBPROC_APPS,
+                'app_name': subproc_name,
+                'app_version': 'XX.YY.ZZ',
             #subproc_version=subproc_version
             }
         )
@@ -81,7 +126,10 @@ def upload_file(request):
             tarball.name, upfilename))
 
 
-        command = '{} {}'.format( settings.HXARC_SCRIPT_PATH, upfilename)
+        command = '{} {}'.format(
+            settings.HXARC_SUBPROC_APPS[subproc_name]['wrapper_path'],
+            upfilename
+        )
 
 
         try:
@@ -104,6 +152,7 @@ def upload_file(request):
                 'upload/error.html',
                 {
                     'hxarc_version': hxarc_version,
+                'hxarc_apps': settings.HXARC_SUBPROC_APPS,
                 #subproc_version=subproc_version,
                 }
             )
@@ -120,10 +169,14 @@ def upload_file(request):
         {
             'upload_id': upid,
             'hxarc_version': hxarc_version,
+            'hxarc_apps': settings.HXARC_SUBPROC_APPS,
+            'app_name': subproc_name,
+            'app_version': 'XX.YY.ZZ',
         #subproc_version=subproc_version
         }
     )
 
+@login_required
 def download_result(request, upload_id):
     upfile = os.path.join(settings.HXARC_UPLOAD_DIR, upload_id, 'result.tar.gz')
     if os.path.exists(upfile):

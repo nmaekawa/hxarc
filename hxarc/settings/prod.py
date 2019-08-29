@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
+import json
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -208,10 +209,20 @@ SESSION_COOKIE_SAMESITE = None
 HXARC_UPLOAD_DIR = MEDIA_ROOT
 HXARC_UPLOAD_FILENAME = os.environ.get(
     'HXARC_UPLOAD_FILENAME', 'export')
-HXARC_SCRIPT_PATH = os.environ.get(
-    'HXARC_SCRIPT_PATH',
-    os.path.join(BASE_DIR, 'files/hxarc_wrapper.sh'))
 
+wrapper_fake_path = os.path.join(BASE_DIR, 'files/hxarc_wrapper.sh')
+HXARC_SCRIPT_PATH = json.loads(os.environ.get(
+    'HXARC_SCRIPT_PATH',
+    '{"fake": "' + wrapper_fake_path + '"}'))
+
+HXARC_SUBPROC_APPS = {
+    'fake': {
+        'wrapper_path': os.path.join(BASE_DIR, 'files/hxarc_wrapper.sh'),
+        'display_name': 'fake',
+    },
+}
+extra_subproc_apps = json.loads(os.environ.get('HXARC_SUBPROC_APPS', '{}'))
+HXARC_SUBPROC_APPS.update(extra_subproc_apps)
 
 
 

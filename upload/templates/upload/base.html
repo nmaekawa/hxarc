@@ -7,7 +7,12 @@
     </head>
     <body>
     <header>
-        <h3>hxarc v{{ hxarc_version }}</h3>
+        <p>hxarc v{{ hxarc_version }}
+        |
+        {% for key,values in hxarc_apps.items %}
+        <a href="{% url key %}">{{ values.display_name }}</a> |
+        {% endfor %}
+        </p>
     </header>
 
     {% block content %}{% endblock %}
