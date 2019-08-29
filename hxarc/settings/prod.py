@@ -221,7 +221,13 @@ HXARC_SUBPROCS = {
         'display_name': 'fake',
     },
 }
-extra_subprocs = json.loads(os.environ.get('HXARC_SUBPROCS', '{}'))
+# this replaces default 'sample' subproc
+hxarc_subprocs = json.loads(os.environ.get('HXARC_SUBPROCS', '{}'))
+if hxarc_subprocs:
+    HXARC_SUBPROCS = hxarc_subprocs
+
+# this adds to hxarc_subprocs
+extra_subprocs = json.loads(os.environ.get('HXARC_SUBPROCS_EXTRA', '{}'))
 HXARC_SUBPROCS.update(extra_subprocs)
 
 

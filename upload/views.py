@@ -34,6 +34,7 @@ def landing(request):
         {
             'hxarc_version': hxarc_version,
             'hxarc_subprocs': settings.HXARC_SUBPROCS,
+            'username': request.user.username,
         }
     )
 
@@ -50,8 +51,6 @@ def lti_upload(request):
 
     # login user
     login(request, user)
-    request.session['user_logged'] = user.id
-    request.session.modified = True
 
     form = UploadFileForm()
     return render(
@@ -60,6 +59,7 @@ def lti_upload(request):
         {
             'hxarc_version': hxarc_version,
             'hxarc_subprocs': settings.HXARC_SUBPROCS,
+            'username': user.username,
         }
     )
 
@@ -86,6 +86,7 @@ def upload_file(request, subproc_id='sample'):
             {
                 'hxarc_version': hxarc_version,
                 'hxarc_subprocs': settings.HXARC_SUBPROCS,
+                'username': request.user.username,
                 'form': form,
                 'form_action': reverse(subproc_id),
                 'subproc_name': subproc_conf['display_name'],
@@ -140,6 +141,9 @@ def upload_file(request, subproc_id='sample'):
                 {
                     'hxarc_version': hxarc_version,
                     'hxarc_subprocs': settings.HXARC_SUBPROCS,
+                    'username': request.user.username,
+                    'subproc_name': subproc_conf['display_name'],
+                    'subproc_version': subproc_version[subproc_id],
                 }
             )
 
@@ -156,6 +160,7 @@ def upload_file(request, subproc_id='sample'):
             'upload_id': upid,
             'hxarc_version': hxarc_version,
             'hxarc_subprocs': settings.HXARC_SUBPROCS,
+            'username': request.user.username,
             'subproc_name': subproc_conf['display_name'],
             'subproc_version': subproc_version[subproc_id],
         }
