@@ -46,7 +46,7 @@ def lti_upload(request):
 
     # fetch or create lti user
     # counting it's in edx, and properly configured to send username
-    username = request.POST['lis_person_sourceid']
+    username = request.POST['lis_person_sourcedid']
     user, created = User.objects.get_or_create(username=username,
                                                email='{}@hx.edu'.format(username))
 
