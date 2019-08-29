@@ -11,7 +11,7 @@ urlpatterns = [
 ]
 
 # BEWARE that configs are not being tested for valid url path and names
-for subproc in settings.HXARC_SUBPROC_APPS:
+for subproc in settings.HXARC_SUBPROCS:
     urlpatterns.append(path('{}/'.format(subproc),
                             views.upload_file,
                             {'subproc_name': subproc},
