@@ -2,7 +2,25 @@
 
 {% block content %}
     <main>
-        <h4>hxarc</h4>
-        <p>This is a landing page</p>
+    <h1>Welcome to hxarc v-{{ hxarc_version }}</h1>
+    <p> This is the web version of Colin Fredericks' hx_util (course export
+    utilities).</p>
+
+    <h4>Upload your edX export (&lt;<em>edx-random-id</em>&gt;.tar.gz) to get:</h4>
+    <ul>
+        <li>a list of all the video files in your course and where in the
+            course they appear in .tsv format (Course_Video_Sheet.tsv)</li>
+        <li>a folder full of .srt transcript files</li>
+        <li>a list of all URLs to external sites and documents used in the
+            course</li>
+        <li>more good stuff as Colin adds more pixie dust</li>
+    </ul>
+    <p>Upload returns a page with a download link and the file you'll get back
+    will be called <em>hxarc_&lt;bunchacharacters&gt;</em>.tar.gez and opening
+    that will give you the above items.</p>
+    <p>If you need to open the .tsv, using Google Sheets will reduce Unicode
+    issues that Excell can suffer.</p>
+
+    <p><a href="{% url 'hx_util' %}">upload and process&raquo;</a></p>
     </main>
 {% endblock %}

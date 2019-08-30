@@ -210,11 +210,6 @@ HXARC_UPLOAD_DIR = MEDIA_ROOT
 HXARC_UPLOAD_FILENAME = os.environ.get(
     'HXARC_UPLOAD_FILENAME', 'export')
 
-wrapper_fake_path = os.path.join(BASE_DIR, 'files/hxarc_wrapper.sh')
-HXARC_SCRIPT_PATH = json.loads(os.environ.get(
-    'HXARC_SCRIPT_PATH',
-    '{"fake": "' + wrapper_fake_path + '"}'))
-
 HXARC_SUBPROCS = {
     'sample': {  # subproc_id
         'wrapper_path': os.path.join(BASE_DIR, 'files/hxarc_wrapper.sh'),
