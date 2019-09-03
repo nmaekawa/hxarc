@@ -2,7 +2,7 @@
 
 {% block content %}
     <main>
-    <h1>Welcome to hxarc v-{{ hxarc_version }}</h1>
+    <h1>Welcome to hxarc v{{ hxarc_version }}</h1>
     <p> This is the web version of Colin Fredericks' hx_util (course export
     utilities).</p>
 
@@ -16,11 +16,11 @@
         <li>more good stuff as Colin adds more pixie dust</li>
     </ul>
     <p>Upload returns a page with a download link and the file you'll get back
-    will be called <em>hxarc_&lt;bunchacharacters&gt;</em>.tar.gez and opening
+    will be called <em>hxarc_&lt;bunchacharacters&gt;</em>.tar.gz and opening
     that will give you the above items.</p>
     <p>If you need to open the .tsv, using Google Sheets will reduce Unicode
     issues that Excell can suffer.</p>
 
-    <p><a href="{% url 'hx_util' %}">upload and process&raquo;</a></p>
+    <p><a href="{% url 'hx_util' %}">upload for archive&raquo;</a></p>
     </main>
 {% endblock %}

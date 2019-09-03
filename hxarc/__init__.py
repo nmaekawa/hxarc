@@ -2,4 +2,4 @@
 
 __author__ = 'nmaekawa'
 __email__ = "nmaekawa@g.harvard.edu"
-__version__ = '1.2.0'  # accepts both un/compressed uploads
+__version__ = '2.0.0'  # django-lti, olxcleaner

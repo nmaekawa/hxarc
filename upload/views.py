@@ -34,7 +34,6 @@ def landing(request):
         {
             'hxarc_version': hxarc_version,
             'hxarc_subprocs': settings.HXARC_SUBPROCS,
-            'username': request.user.username,
         }
     )
 
@@ -60,7 +59,6 @@ def lti_upload(request):
         {
             'hxarc_version': hxarc_version,
             'hxarc_subprocs': settings.HXARC_SUBPROCS,
-            'username': user.username,
         }
     )
 
@@ -75,7 +73,10 @@ def upload_file(request, subproc_id='sample'):
     if subproc_id not in subproc_version:
         subproc_version[subproc_id] = get_subproc_version(
             subproc_conf['wrapper_path'])
-        logger.info('{} - version {}'.format(__name__, subproc_version))
+        logger.info('[{}] {} - version {}'.format(
+            request.user.username,
+            __name__, subproc_version
+        ))
 
 
     if request.method != 'POST':
@@ -87,7 +88,6 @@ def upload_file(request, subproc_id='sample'):
             {
                 'hxarc_version': hxarc_version,
                 'hxarc_subprocs': settings.HXARC_SUBPROCS,
-                'username': request.user.username,
                 'form': form,
                 'form_action': reverse(subproc_id),
                 'subproc_name': subproc_conf['display_name'],
@@ -111,7 +111,8 @@ def upload_file(request, subproc_id='sample'):
             updir, '{}.{}'.format(settings.HXARC_UPLOAD_FILENAME, ext))
         actual_filename = fs.save(upfilename, tarball)
 
-        logger.info('uploaded file({}) as ({})'.format(
+        logger.info('[{}] uploaded file({}) as ({})'.format(
+            request.user.username,
             tarball.name, upfilename))
 
 
@@ -132,7 +133,8 @@ def upload_file(request, subproc_id='sample'):
                 'utf-8', 'ignore').strip().replace('\n', '<br/>')
             msg = 'exit code[{}] - {}'.format(
                 e.returncode, e.output)
-            logger.warning('COMMAND: ({}) -- {}'.format(
+            logger.warning('[{}] COMMAND: ({}) -- {}'.format(
+                request.user.username,
                 command,
                 e.output.decode('utf-8', 'ignore').strip(),
             ))
@@ -142,14 +144,14 @@ def upload_file(request, subproc_id='sample'):
                 {
                     'hxarc_version': hxarc_version,
                     'hxarc_subprocs': settings.HXARC_SUBPROCS,
-                    'username': request.user.username,
                     'subproc_name': subproc_conf['display_name'],
                     'subproc_version': subproc_version[subproc_id],
                 }
             )
 
         # success
-        logger.info('COMMAND: ({}) -- exit code[0] --- result({})'.format(
+        logger.info('[{}] COMMAND: ({}) -- exit code[0] --- result({})'.format(
+            request.user.username,
             command, result.decode('utf-8', 'ignore').strip()))
     else:
         form = UploadFileForm()
@@ -161,7 +163,6 @@ def upload_file(request, subproc_id='sample'):
             'upload_id': upid,
             'hxarc_version': hxarc_version,
             'hxarc_subprocs': settings.HXARC_SUBPROCS,
-            'username': request.user.username,
             'subproc_name': subproc_conf['display_name'],
             'subproc_version': subproc_version[subproc_id],
         }

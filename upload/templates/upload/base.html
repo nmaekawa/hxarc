@@ -13,8 +13,6 @@
         {% for key,values in hxarc_subprocs.items %}
         | <a href="{% url key %}">{{ values.display_name }}</a>
         {% endfor %}
-        &nbsp;&nbsp;&nbsp;
-        logged as {% firstof username 'anonymous' %}
         </p>
     </header>
 
