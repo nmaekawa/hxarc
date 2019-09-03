@@ -30,11 +30,8 @@ def get_exts(filename):
 
     returns the 2 rightmost extension as string `<ext>.<ext>`
     """
-    logger.info('********* filename({})'.format(filename))
     if filename.count('.') > 1:
         (garbage, ext1, ext2) = filename.rsplit('.', 2)
-        logger.info('********** garbage({}), ext1({}), ext2({})'.format(
-            garbage, ext1, ext2))
         return '{}.{}'.format(ext1.lower(), ext2.lower())
     return None
 
