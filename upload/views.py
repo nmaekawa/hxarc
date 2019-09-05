@@ -53,7 +53,7 @@ def lti_upload(request):
     login(request, user)
 
     # pick first configured subproc
-    subproc_id = list(settings.HXARC_SUBPROCS0[0]
+    subproc_id = list(settings.HXARC_SUBPROCS)[0]
     subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
 
     global subproc_version
