@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        {% load staticfiles %}
+        <link rel="stylesheet" type="text/css" href="{% static "css/main.css" %}">
+        <title>{% block title %}hxarc{% endblock %}</title>
+    </head>
+    <body>
+    <header>
+        <p>
+        &nbsp;&nbsp;
+        hxarc v{{ hxarc_version }}
+        {% for key,values in hxarc_subprocs.items %}
+        | <a href="{% url key %}">{{ values.display_name }}</a>
+        {% endfor %}
+        </p>
+    </header>
+
+    {% block content %}{% endblock %}
+
+    </body>
+</html>

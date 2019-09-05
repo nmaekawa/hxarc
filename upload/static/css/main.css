@@ -1,0 +1,54 @@
+#result {
+  text-align: center;
+}
+
+#main-form {
+  text-align: center;
+}
+
+#main-download {
+  text-align: center;
+}
+
+input[type="submit"] {
+  font-family: Arial, sans-sarif;
+  background: #dedede;
+  padding: 10px;
+  font-size: 16pt;
+  border-radius: 5px;
+  margin-top: 15px;
+}
+h4 {
+  font-size: 20pt;
+}
+
+input[type="file"] {
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+body {
+  font-family: Arial, sans-sarif;
+  padding-top: 55px;
+}
+
+header a {
+  color: white;
+  text-decoration: none;
+
+}
+
+header {
+  width: 100%;
+  color: white;
+  background: black;
+  height: 55px;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+h3 {
+  margin-left: 50px;
+}
+
+

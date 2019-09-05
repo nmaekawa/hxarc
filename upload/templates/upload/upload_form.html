@@ -1,0 +1,15 @@
+{% extends 'upload/base.html' %}
+
+{% block content %}
+    <main id="main-form">
+    <h4>{{ subproc_name }} v{{ subproc_version }}</h4>
+        <form action="{{ form_action }}" method="post" enctype="multipart/form-data"
+            onsubmit="submit_upload.disabled=true; return true;">
+            {% csrf_token %}
+            <label for="course_tarball">course export tarball</label><br>
+            <input name="course_tarball" id="course_tarball" type="file" required /><br>
+            <input name="submit_upload" type="submit" value="upload"/>
+        </form>
+    </main>
+{% endblock %}
+

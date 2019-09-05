@@ -1,4 +1,7 @@
-*.py[cod]
+*.log
+*.db
+
+*.py[codt]
 
 # C extensions
 *.so
@@ -6,6 +9,7 @@
 # Packages
 *.egg
 *.egg-info
+dist
 build
 eggs
 parts
@@ -43,11 +47,17 @@ docs/_build
 .webassets-cache
 
 # Virtualenvs
-env/
+env
+env*
+venv
 
-# npm
-/node_modules/
+# intellij
+*.ipr
+*.iml
+*.iws
 
-# webpack-built files
-/hxarc/static/build/
-#/hxarc/webpack/manifest.json
+.DS_Store
+
+# node
+node_modules/
+

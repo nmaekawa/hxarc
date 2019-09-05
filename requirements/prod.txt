@@ -1,40 +1,7 @@
-# Everything needed in production
+Django==2.2.4
 
-# Flask
-Flask==0.12.2
-MarkupSafe==1.0
-Werkzeug==0.14.1
-Jinja2==2.10
-itsdangerous==0.24
-click>=5.0
-python-dotenv>=0.8.2
+python-dotenv==0.10.3
+git+https://github.com/nmaekawa/hxlti-djapp.git#egg=hxlti-djapp
 
-# Database
-Flask-SQLAlchemy==2.3.2
-SQLAlchemy==1.2.2
+django-cors-headers==3.0.2
 
-# Migrations
-Flask-Migrate==2.1.1
-
-# Forms
-Flask-WTF==0.14.2
-WTForms==2.1
-
-# Deployment
-gunicorn>=19.1.1
-
-# Webpack
-flask-webpack==0.1.0
-
-# Auth
-Flask-Login==0.4.1
-Flask-Bcrypt==0.7.1
-
-# Caching
-Flask-Caching>=1.0.0
-
-# Debug toolbar
-Flask-DebugToolbar==0.10.1
-
-# logging file format
-pyaml>=17.12
