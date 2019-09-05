@@ -32,10 +32,16 @@ body {
   padding-top: 55px;
 }
 
+header a {
+  color: white;
+  text-decoration: none;
+
+}
+
 header {
   width: 100%;
   color: white;
-  background: grey;
+  background: black;
   height: 55px;
   position: fixed;
   top: 0;
