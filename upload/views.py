@@ -52,13 +52,32 @@ def lti_upload(request):
     # login user
     login(request, user)
 
+    # pick first configured subproc
+    subproc_id = list(settings.HXARC_SUBPROCS0[0]
+    subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
+
+    global subproc_version
+    if subproc_version is None:
+        subproc_version = {}
+    if subproc_id not in subproc_version:
+        subproc_version[subproc_id] = get_subproc_version(
+            subproc_conf['wrapper_path'])
+        logger.info('[{}] {} - version {}'.format(
+            request.user.username,
+            __name__, subproc_version
+        ))
+
     form = UploadFileForm()
     return render(
         request,
-        'upload/landing.html',
+        'upload/upload_form.html',
         {
             'hxarc_version': hxarc_version,
             'hxarc_subprocs': settings.HXARC_SUBPROCS,
+            'form': form,
+            'form_action': reverse(subproc_id),
+            'subproc_name': subproc_conf['display_name'],
+            'subproc_version': subproc_version[subproc_id],
         }
     )
 
@@ -95,6 +114,7 @@ def upload_file(request, subproc_id='sample'):
             }
         )
 
+    upid = str(uuid.uuid4())
     form = UploadFileForm(request.POST, request.FILES)
     if form.is_valid():
         tarball = request.FILES['course_tarball']
@@ -104,7 +124,6 @@ def upload_file(request, subproc_id='sample'):
         # this subdir is a uuid, so pretty sure it's unique named
         ext = get_exts(tarball.name)
 
-        upid = str(uuid.uuid4())
         updir = '{}/{}'.format(settings.HXARC_UPLOAD_DIR, upid)
         os.mkdir(updir)  # create a dir for each upload
         upfilename = os.path.join(

@@ -5,7 +5,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.landing, name='landing'),
     path('launch/', views.lti_upload, name='launch'),
     path('result/<slug:upload_id>/', views.download_result, name='result'),
 ]
