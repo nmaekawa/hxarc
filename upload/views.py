@@ -124,7 +124,7 @@ def upload_file(request, subproc_id='sample'):
         # this subdir is a uuid, so pretty sure it's unique named
         ext = get_exts(tarball.name)
 
-        updir = '{}/{}'.format(settings.HXARC_UPLOAD_DIR, upid)
+        updir = os.path.join(settings.HXARC_UPLOAD_DIR, upid)
         os.mkdir(updir)  # create a dir for each upload
         upfilename = os.path.join(
             updir, '{}.{}'.format(settings.HXARC_UPLOAD_FILENAME, ext))
