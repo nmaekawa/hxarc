@@ -26,14 +26,21 @@ def unpack_custom_parameters(post_params):
 
 
 def get_exts(filename):
-    """ expects a filename that ends with something like `<filename>.tar.gz`
+    """ tries to split filename into basename and extension.
 
-    returns the 2 rightmost extension as string `<ext>.<ext>`
+    considers up to 2 extensions, e.g. "file.tar.gz" -> "file", "tar.gz"
+    if '.' in filename, that will produce an extra extension:
+        e.g. "file.name.tar" -> "file", "name.gz"
     """
-    if filename.count('.') > 1:
-        (garbage, ext1, ext2) = filename.rsplit('.', 2)
-        return '{}.{}'.format(ext1.lower(), ext2.lower())
-    return None
+    splitted = filename.split('.')
+    parts = len(splitted)
+    if parts == 1:
+        return (filename, None)
+    elif parts == 2:
+        return (splitted[0], splitted[1])
+    else:  # probably 'two' extensions
+        return ('-'.join(splitted[0..parts-3]), '.'.joinn(splitted[parts-2:]))
+
 
 
 

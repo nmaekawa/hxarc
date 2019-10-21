@@ -175,6 +175,19 @@ USE_L10N = True
 USE_TZ = True
 
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.environ.get(
+            'HXARC_FILE_CACHE_DIR', os.path.join(BASE_DIR, 'hxarc_filecache')),
+        'TIMETOUT': 86400,  # 1 day
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
+    }
+}
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 STATIC_URL = '/static/'
@@ -211,11 +224,14 @@ HXARC_UPLOAD_FILENAME = os.environ.get(
     'HXARC_UPLOAD_FILENAME', 'export')
 
 HXARC_SUBPROCS = {
-    'sample': {  # subproc_id
+    # key/subproc_id must be the package name
+    'sample': {
         'wrapper_path': os.path.join(BASE_DIR, 'files/hxarc_wrapper.sh'),
         'display_name': 'fake',
         # text in form for label of filename to be uploaded
         'display_label': 'course export tarball',
+        'output_basename': 'result',  # internal output filename
+        'output_ext': 'tar.gz',  # internal output filename
     },
 }
 # this replaces default 'sample' subproc

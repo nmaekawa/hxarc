@@ -1,6 +1,7 @@
 
 import logging
 import os
+import re
 import subprocess
 import uuid
 
@@ -9,6 +10,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.files.storage import FileSystemStorage
 from django.http import Http404
 from django.http import HttpResponse
@@ -122,15 +124,25 @@ def upload_file(request, subproc_id='sample'):
         tarball = request.FILES['input_filename']
         fs = FileSystemStorage()
 
-        # save uploaded file in a subdir of HXARC_UPLOAD_DIR;
-        # this subdir is a uuid, so pretty sure it's unique named
-        ext = get_exts(tarball.name)
+        # tarball.name is a `basename`, so counting that the prefix of
+        # tarball.name is the filename without extension
+        prefix, ext = get_exts(tarball.name)
+        input_basename = re.sub(r'\W+', '-', prefix)
 
+        # save uploaded file in a subdir of HXARC_UPLOAD_DIR;
+        # this subdir is a uuid, so pretty sure it's uniquely named
         updir = os.path.join(settings.HXARC_UPLOAD_DIR, upid)
         os.mkdir(updir)  # create a dir for each upload
         upfilename = os.path.join(
             updir, '{}.{}'.format(settings.HXARC_UPLOAD_FILENAME, ext))
         actual_filename = fs.save(upfilename, tarball)
+        cache.set(upid, {
+            'original_filename': input_basename,
+            'output_basename': subproc_conf.get(
+                'output_basename', 'result'),
+            'output_ext': subproc_conf.get(
+                'output_ext', 'tar.gz'),
+        })
 
         logger.info('[{}] uploaded file({}) as ({})'.format(
             request.user.username,
@@ -192,7 +204,17 @@ def upload_file(request, subproc_id='sample'):
 
 @login_required
 def download_result(request, upload_id):
-    upfile = os.path.join(settings.HXARC_UPLOAD_DIR, upload_id, 'result.tar.gz')
+    cache_info = cache.get(upload_id)
+    if cache_info is None:
+        return Http404;
+
+    upfile = os.path.join(
+        settings.HXARC_UPLOAD_DIR, upload_id,
+        '{}.{}'.format(
+            cache_info['output_basename'],
+            cache_info['output_ext'],
+        )
+    )
     if os.path.exists(upfile):
         with open(upfile, 'rb') as fh:
             response = HttpResponse(
@@ -200,7 +222,10 @@ def download_result(request, upload_id):
                 content_type='application/gzip',
             )
             response['Content-Disposition'] = 'inline; filename=' + \
-                    'hxarc_{}.tar.gz'.format(upload_id)
+                    'hxarc_{}.{}'.format(
+                        cache_info['original_filename'],
+                        cache_info['output_ext'],
+                    )
         return response
     else:
         return Http404;
