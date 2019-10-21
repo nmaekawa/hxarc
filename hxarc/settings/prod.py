@@ -214,6 +214,8 @@ HXARC_SUBPROCS = {
     'sample': {  # subproc_id
         'wrapper_path': os.path.join(BASE_DIR, 'files/hxarc_wrapper.sh'),
         'display_name': 'fake',
+        # text in form for label of filename to be uploaded
+        'display_label': 'course export tarball',
     },
 }
 # this replaces default 'sample' subproc

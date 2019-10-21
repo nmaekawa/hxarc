@@ -111,13 +111,15 @@ def upload_file(request, subproc_id='sample'):
                 'form_action': reverse(subproc_id),
                 'subproc_name': subproc_conf['display_name'],
                 'subproc_version': subproc_version[subproc_id],
+                'input_filename_label': subproc_conf.get(
+                    'display_label', 'course export tarball'),
             }
         )
 
     upid = str(uuid.uuid4())
     form = UploadFileForm(request.POST, request.FILES)
     if form.is_valid():
-        tarball = request.FILES['course_tarball']
+        tarball = request.FILES['input_filename']
         fs = FileSystemStorage()
 
         # save uploaded file in a subdir of HXARC_UPLOAD_DIR;
