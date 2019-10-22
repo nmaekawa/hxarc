@@ -24,7 +24,6 @@ from django.views.decorators.csrf import csrf_exempt
 from hxarc import __version__ as hxarc_version
 from hxlti.decorators import require_lti_launch
 from .forms import UploadFileForm
-from .util import get_exts
 from .util import validate_filename
 from .util import unpack_custom_parameters
 
@@ -92,7 +91,6 @@ def upload_file(request, subproc_id='sample'):
         raise Http404('unknown subprocess({})'.format(subproc_id))
     else:
         subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
-        logger.debug('........................ config: {}'.format(subproc_conf))
 
     global subproc_version
     if subproc_version is None:
@@ -106,7 +104,6 @@ def upload_file(request, subproc_id='sample'):
         ))
 
     if request.method != 'POST':
-        #flash_errors(form)
         form = UploadFileForm()
         return render(
             request,
@@ -135,12 +132,14 @@ def upload_file(request, subproc_id='sample'):
             tarball.name, form.cleaned_data['exts'])
         if input_basename is None or input_ext is None:
             # invalid file extension
-            raise Http400('invalid file type; accepted {}'.format(
-                form.cleaned_data['exts']))
-
-        logger.debug('================ ({})|({})'.format(input_basename,
-                                                         input_ext))
-
+            return render_error(
+                request, subproc_id, [
+                'invalid filename ({}): valid extensions {}'.format(
+                    tarball.name,
+                    form.cleaned_data['exts'],
+                )],
+                status_code=400,
+            )
 
         # save uploaded file in a subdir of HXARC_UPLOAD_DIR;
         # this subdir is a uuid, so pretty sure it's uniquely named
@@ -149,18 +148,16 @@ def upload_file(request, subproc_id='sample'):
         upfilename = os.path.join(
             updir, '{}.{}'.format(
                 settings.HXARC_UPLOAD_FILENAME, input_ext))
-
-        logger.debug('******-******** upfilename({})'.format(upfilename))
         actual_filename = fs.save(upfilename, tarball)
-        logger.debug('******-******** actual({})'.format(actual_filename))
-        cache.set(upid, {
+
+        cache.set(upid, {  # to be used in download
+            'subproc_id': subproc_id,
             'original_filename': input_basename,
             'output_basename': subproc_conf.get(
                 'output_basename', 'result'),
             'output_ext': subproc_conf.get(
                 'output_ext', 'tar.gz'),
         })
-        logger.debug('************** upid({})'.format(upid))
 
         logger.info('[{}] uploaded file({}) as ({})'.format(
             request.user.username,
@@ -189,26 +186,17 @@ def upload_file(request, subproc_id='sample'):
                 command,
                 e.output.decode('utf-8', 'ignore').strip(),
             ))
-            return render(
-                request,
-                'upload/error.html',
-                {
-                    'hxarc_version': hxarc_version,
-                    'hxarc_subprocs': settings.HXARC_SUBPROCS,
-                    'subproc_name': subproc_conf['display_name'],
-                    'subproc_version': subproc_version[subproc_id],
-                }
-            )
+            return render_error(request, subproc_id)
 
         # success
         logger.info('[{}] COMMAND: ({}) -- exit code[0] --- result({})'.format(
             request.user.username,
             command, result.decode('utf-8', 'ignore').strip()))
     else:
-        # form not valid! throw error?
-        form = UploadFileForm()
+        # form not valid! probably malformed exts config
+        logger.error('form invalid; probably config exts not json [suspicious]')
+        return render_error(request, subproc_id)
 
-    logger.debug('************** upid({})'.format(upid))
     return render(
         request,
         'upload/result_link.html',
@@ -224,11 +212,13 @@ def upload_file(request, subproc_id='sample'):
 
 @login_required
 def download_result(request, upload_id):
-    logger.debug('************** upid({})'.format(upload_id))
     cache_info = cache.get(upload_id)
     if cache_info is None:
-        logger.debug('------ cache_info is None')
-        raise Http404('invalid upload_id');
+        return render_error(
+            request,
+            subproc_id=None,
+            msgs=['invalid upload_id({})'.format(upload_id)],
+            status_code=404)
 
     upfile = os.path.join(
         settings.HXARC_UPLOAD_DIR, upload_id,
@@ -237,7 +227,6 @@ def download_result(request, upload_id):
             cache_info['output_ext'],
         )
     )
-    logger.debug('^^^^^^^^^^^^^^^^^^^^^^ upfile({})'.format(upfile))
 
     if os.path.exists(upfile):
         with open(upfile, 'rb') as fh:
@@ -253,6 +242,12 @@ def download_result(request, upload_id):
         return response
     else:
         raise Http404('processed file already cleaned up');
+        return render_error(
+            request,
+            subproc_id=cache_info['subproc_id'],
+            subproc_version=cache_info['subproc_version'],
+            msgs=['expired upload_id({})'.format(upload_id)],
+            status_code=404)
 
 
 def get_subproc_version(script_path):
@@ -284,4 +279,34 @@ def get_subproc_version(script_path):
             command, version))
 
     return version
+
+def render_error(
+    request, subproc_id=None,
+    msgs=[], status_code=500):
+
+    global subproc_version
+    subproc_name = 'n/a'
+    subproc_v = 'n/a'
+    if subproc_id:
+        subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
+        subproc_name = subproc_conf['display_name']
+        subproc_v = subproc_version[subproc_id]
+
+    return render(
+        request,
+        'upload/error.html',
+        {
+            'hxarc_version': hxarc_version,
+            'hxarc_subprocs': settings.HXARC_SUBPROCS,
+            'subproc_name': subproc_name,
+            'subproc_version': subproc_v,
+            'errors': msgs,
+        },
+        status=status_code,
+    )
+
+
+
+
+
 

@@ -230,9 +230,13 @@ HXARC_SUBPROCS = {
         'display_name': 'fake',
         # text in form for label of filename to be uploaded
         'display_label': 'course export tarball',
+        # subproc output filename
         'output_basename': 'result',  # internal output filename
         'output_ext': 'tar.gz',  # internal output filename
-        'exts_in_upload': ['.tar.gz'],
+        # upload file valid extensions; it's a list and each item must have the
+        # '.' dot prefix; order is important as the first item that matches the
+        # upload filename will be considered the proper extension
+        'exts_in_upload': ['.tar.gz', '.gz',],
     },
 }
 # this replaces default 'sample' subproc
