@@ -232,6 +232,7 @@ HXARC_SUBPROCS = {
         'display_label': 'course export tarball',
         'output_basename': 'result',  # internal output filename
         'output_ext': 'tar.gz',  # internal output filename
+        'exts_in_upload': ['.tar.gz'],
     },
 }
 # this replaces default 'sample' subproc

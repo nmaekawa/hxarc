@@ -1,4 +1,5 @@
 
+import json
 import logging
 import os
 import re
@@ -24,6 +25,7 @@ from hxarc import __version__ as hxarc_version
 from hxlti.decorators import require_lti_launch
 from .forms import UploadFileForm
 from .util import get_exts
+from .util import validate_filename
 from .util import unpack_custom_parameters
 
 subproc_version = None
@@ -86,7 +88,10 @@ def lti_upload(request):
 
 @login_required
 def upload_file(request, subproc_id='sample'):
-    subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
+    if subproc_id not in settings.HXARC_SUBPROCS:
+        raise Http404('unknown subprocess({})'.format(subproc_id))
+    else:
+        subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
 
     global subproc_version
     if subproc_version is None:
@@ -98,7 +103,6 @@ def upload_file(request, subproc_id='sample'):
             request.user.username,
             __name__, subproc_version
         ))
-
 
     if request.method != 'POST':
         #flash_errors(form)
@@ -114,11 +118,14 @@ def upload_file(request, subproc_id='sample'):
                 'subproc_name': subproc_conf['display_name'],
                 'subproc_version': subproc_version[subproc_id],
                 'input_filename_label': subproc_conf.get(
-                    'display_label', 'course export tarball'),
+                    'display_label', 'course export tarball (.tar.gz)'),
+                'exts_in_upload': json.dumps(subproc_conf.get(
+                    'exts_in_upload', ['.tar.gz'])),
             }
         )
 
     upid = str(uuid.uuid4())
+    logger.debug('************** upid({})'.format(upid))
     form = UploadFileForm(request.POST, request.FILES)
     if form.is_valid():
         tarball = request.FILES['input_filename']
@@ -126,16 +133,22 @@ def upload_file(request, subproc_id='sample'):
 
         # tarball.name is a `basename`, so counting that the prefix of
         # tarball.name is the filename without extension
-        prefix, ext = get_exts(tarball.name)
-        input_basename = re.sub(r'\W+', '-', prefix)
+        #prefix, ext = get_exts(tarball.name)
+        #input_basename = re.sub(r'\W+', '-', prefix)
+        input_basename, input_ext = validate_filename(
+            tarball.name, form.cleaned_data['exts'])
 
         # save uploaded file in a subdir of HXARC_UPLOAD_DIR;
         # this subdir is a uuid, so pretty sure it's uniquely named
         updir = os.path.join(settings.HXARC_UPLOAD_DIR, upid)
         os.mkdir(updir)  # create a dir for each upload
         upfilename = os.path.join(
-            updir, '{}.{}'.format(settings.HXARC_UPLOAD_FILENAME, ext))
+            updir, '{}.{}'.format(
+                settings.HXARC_UPLOAD_FILENAME, input_ext))
+
+        logger.debug('******-******** upfilename({})'.format(upfilename))
         actual_filename = fs.save(upfilename, tarball)
+        logger.debug('******-******** actual({})'.format(actual_filename))
         cache.set(upid, {
             'original_filename': input_basename,
             'output_basename': subproc_conf.get(
@@ -143,6 +156,7 @@ def upload_file(request, subproc_id='sample'):
             'output_ext': subproc_conf.get(
                 'output_ext', 'tar.gz'),
         })
+        logger.debug('************** upid({})'.format(upid))
 
         logger.info('[{}] uploaded file({}) as ({})'.format(
             request.user.username,
@@ -187,8 +201,10 @@ def upload_file(request, subproc_id='sample'):
             request.user.username,
             command, result.decode('utf-8', 'ignore').strip()))
     else:
+        # form not valid! throw error?
         form = UploadFileForm()
 
+    logger.debug('************** upid({})'.format(upid))
     return render(
         request,
         'upload/result_link.html',
@@ -204,9 +220,11 @@ def upload_file(request, subproc_id='sample'):
 
 @login_required
 def download_result(request, upload_id):
+    logger.debug('************** upid({})'.format(upload_id))
     cache_info = cache.get(upload_id)
     if cache_info is None:
-        return Http404;
+        logger.debug('------ cache_info is None')
+        raise Http404('invalid upload_id');
 
     upfile = os.path.join(
         settings.HXARC_UPLOAD_DIR, upload_id,
@@ -228,7 +246,7 @@ def download_result(request, upload_id):
                     )
         return response
     else:
-        return Http404;
+        raise Http404('processed file already cleaned up');
 
 
 def get_subproc_version(script_path):
@@ -254,7 +272,7 @@ def get_subproc_version(script_path):
         ))
         return 'version not available'
 
-    # success
+    # success:
     version = result.decode('utf-8', 'ignore').strip()
     logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
             command, version))

@@ -1,5 +1,6 @@
 
 import logging
+import re
 
 from django.conf import settings
 
@@ -41,7 +42,12 @@ def get_exts(filename):
     else:  # probably 'two' extensions
         return ('-'.join(splitted[0..parts-3]), '.'.joinn(splitted[parts-2:]))
 
-
-
-
+def validate_filename(filename, valid_exts):
+    """ validates upload filename, splits basename and ext."""
+    for ext in valid_exts:
+        i = filename.find(ext)
+        if i > 0:
+            basename = re.sub(r'\W+', '-', filename[:i])
+            return (basename, ext)
+    return (None, None)
 
