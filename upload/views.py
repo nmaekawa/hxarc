@@ -92,6 +92,7 @@ def upload_file(request, subproc_id='sample'):
         raise Http404('unknown subprocess({})'.format(subproc_id))
     else:
         subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
+        logger.debug('........................ config: {}'.format(subproc_conf))
 
     global subproc_version
     if subproc_version is None:
@@ -125,18 +126,21 @@ def upload_file(request, subproc_id='sample'):
         )
 
     upid = str(uuid.uuid4())
-    logger.debug('************** upid({})'.format(upid))
     form = UploadFileForm(request.POST, request.FILES)
     if form.is_valid():
         tarball = request.FILES['input_filename']
         fs = FileSystemStorage()
 
-        # tarball.name is a `basename`, so counting that the prefix of
-        # tarball.name is the filename without extension
-        #prefix, ext = get_exts(tarball.name)
-        #input_basename = re.sub(r'\W+', '-', prefix)
         input_basename, input_ext = validate_filename(
             tarball.name, form.cleaned_data['exts'])
+        if input_basename is None or input_ext is None:
+            # invalid file extension
+            raise Http400('invalid file type; accepted {}'.format(
+                form.cleaned_data['exts']))
+
+        logger.debug('================ ({})|({})'.format(input_basename,
+                                                         input_ext))
+
 
         # save uploaded file in a subdir of HXARC_UPLOAD_DIR;
         # this subdir is a uuid, so pretty sure it's uniquely named
@@ -233,6 +237,8 @@ def download_result(request, upload_id):
             cache_info['output_ext'],
         )
     )
+    logger.debug('^^^^^^^^^^^^^^^^^^^^^^ upfile({})'.format(upfile))
+
     if os.path.exists(upfile):
         with open(upfile, 'rb') as fh:
             response = HttpResponse(
