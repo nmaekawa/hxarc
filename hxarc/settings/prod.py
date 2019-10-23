@@ -223,10 +223,20 @@ HXARC_UPLOAD_DIR = MEDIA_ROOT
 HXARC_UPLOAD_FILENAME = os.environ.get(
     'HXARC_UPLOAD_FILENAME', 'export')
 
+'''
+hxarc expectations about subprocs:
+1. to execute: <wrapper_path> <input_file>, where input_file valid
+    extensions are in list <exts_in_upload>
+2. subproc accepts argument `version_only` and prints out its version number
+    without any other text, e.g. "2.4.4"
+3. subproc prints out error messages that can be send to log to help debug
+4. subproc generates an output file in the same dir as the given input file,
+    and the output filename is <output_basename>.<output_ext>
+'''
 HXARC_SUBPROCS = {
-    # key/subproc_id must be the package name
     'sample': {
         'wrapper_path': os.path.join(BASE_DIR, 'files/hxarc_wrapper.sh'),
+        # subproc display_name in html
         'display_name': 'fake',
         # text in form for label of filename to be uploaded
         'display_label': 'course export tarball',
