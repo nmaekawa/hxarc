@@ -12,8 +12,12 @@ input_id=$(basename ${input_dir})  # assumes input file has a unique parent dir
 if [ ${1} == 'version_only' ]
 then
     SCRIPT_VERSION=$(pip show django | grep 'Version' | cut -d ' ' -f 2)
-    echo $SCRIPT_VERSION
-    exit 0
+    if [[ -z "${SCRIPT_VERSION// }" ]]; then
+        exit 1
+    else
+        echo $SCRIPT_VERSION
+        exit 0
+    fi
 fi
 
 echo "***** untar/ungzip input file ${input_file}"

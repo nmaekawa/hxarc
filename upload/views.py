@@ -131,13 +131,12 @@ def upload_file(request, subproc_id='sample'):
         input_basename, input_ext = validate_filename(
             tarball.name, form.cleaned_data['exts'])
         if input_basename is None or input_ext is None:
+            msg = 'invalid filename ({}): valid extensions {}'.format(
+                tarball.name, form.cleaned_data['exts'])
+            logger.error(msg)
             # invalid file extension
             return render_error(
-                request, subproc_id, [
-                'invalid filename ({}): valid extensions {}'.format(
-                    tarball.name,
-                    form.cleaned_data['exts'],
-                )],
+                request, subproc_id, [msg],
                 status_code=400,
             )
 
@@ -177,14 +176,17 @@ def upload_file(request, subproc_id='sample'):
                 shell=True
             )
         except subprocess.CalledProcessError as e:
-            output_html = e.output.decode(
-                'utf-8', 'ignore').strip().replace('\n', '<br/>')
+            # debug purposes
+            #output_html = e.output.decode(
+            #    'utf-8', 'ignore').strip().replace('\n', '<br/>')
             msg = 'exit code[{}] - {}'.format(
                 e.returncode, e.output)
-            logger.warning('[{}] COMMAND: ({}) -- {}'.format(
-                request.user.username,
-                command,
-                e.output.decode('utf-8', 'ignore').strip(),
+            logger.warning(
+                '[{}] COMMAND: ({})|exit({}) -- {}'.format(
+                    request.user.username,
+                    command,
+                    e.returncode,
+                    e.output.decode('utf-8', 'ignore').strip(),
             ))
             return render_error(request, subproc_id)
 
@@ -214,10 +216,11 @@ def upload_file(request, subproc_id='sample'):
 def download_result(request, upload_id):
     cache_info = cache.get(upload_id)
     if cache_info is None:
+        msg = 'invalid upload_id({})'.format(upload_id)
         return render_error(
             request,
             subproc_id=None,
-            msgs=['invalid upload_id({})'.format(upload_id)],
+            msgs=[msg],
             status_code=404)
 
     upfile = os.path.join(
@@ -241,21 +244,19 @@ def download_result(request, upload_id):
                     )
         return response
     else:
-        raise Http404('processed file already cleaned up');
+        msg = 'expired upload_id({})'.format(upload_id)
+        logger.error(msg)
         return render_error(
             request,
             subproc_id=cache_info['subproc_id'],
-            subproc_version=cache_info['subproc_version'],
-            msgs=['expired upload_id({})'.format(upload_id)],
+            msgs=[msg],
             status_code=404)
 
 
 def get_subproc_version(script_path):
     """execute wrapper script to get subproc version."""
 
-    logger = logging.getLogger(__name__)
     command = '{} version_only'.format(script_path)
-
     try:
         result = subprocess.check_output(
             command,
@@ -263,21 +264,16 @@ def get_subproc_version(script_path):
             shell=True
         )
     except subprocess.CalledProcessError as e:
-        output_html = e.output.decode(
-            'utf-8', 'ignore').strip().replace('\n', '<br/>')
         msg = 'exit code[{}] - {}'.format(
             e.returncode, e.output)
         logger.debug('COMMAND: ({}) -- {}'.format(
-            command,
-            e.output.decode('utf-8', 'ignore').strip(),
-        ))
+            command, e.output.decode('utf-8', 'ignore').strip() ))
         return 'version not available'
 
     # success:
     version = result.decode('utf-8', 'ignore').strip()
     logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
             command, version))
-
     return version
 
 def render_error(
@@ -285,8 +281,8 @@ def render_error(
     msgs=[], status_code=500):
 
     global subproc_version
-    subproc_name = 'n/a'
-    subproc_v = 'n/a'
+    subproc_name = 'app n/a'
+    subproc_v = 'version n/a'
     if subproc_id:
         subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
         subproc_name = subproc_conf['display_name']
