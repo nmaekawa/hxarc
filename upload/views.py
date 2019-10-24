@@ -3,12 +3,10 @@ import json
 import logging
 import mimetypes
 import os
-import re
 import subprocess
 import uuid
 
 from django.conf import settings
-from django.contrib.auth import authenticate
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -21,15 +19,15 @@ from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
 
-
 from hxarc import __version__ as hxarc_version
 from hxlti.decorators import require_lti_launch
 from .forms import UploadFileForm
 from .util import validate_filename
-from .util import unpack_custom_parameters
+
 
 subproc_version = None
 logger = logging.getLogger(__name__)
+
 
 def landing(request):
     return render(
@@ -145,10 +143,10 @@ def upload_file(request, subproc_id='sample'):
         # this subdir is a uuid, so pretty sure it's uniquely named
         updir = os.path.join(settings.HXARC_UPLOAD_DIR, upid)
         os.mkdir(updir)  # create a dir for each upload
-        upfilename = os.path.join(
+        upfullpath = os.path.join(
             updir, '{}.{}'.format(
                 settings.HXARC_UPLOAD_FILENAME, input_ext))
-        actual_filename = fs.save(upfilename, tarball)
+        fs.save(upfullpath, tarball)
 
         cache.set(upid, {  # to be used in download
             'subproc_id': subproc_id,
@@ -161,14 +159,12 @@ def upload_file(request, subproc_id='sample'):
 
         logger.info('[{}] uploaded file({}) as ({})'.format(
             request.user.username,
-            tarball.name, upfilename))
-
+            tarball.name, upfullpath))
 
         command = '{} {}'.format(
             subproc_conf['wrapper_path'],
-            upfilename
+            upfullpath
         )
-
 
         try:
             result = subprocess.check_output(
@@ -188,7 +184,8 @@ def upload_file(request, subproc_id='sample'):
                     command,
                     e.returncode,
                     e.output.decode('utf-8', 'ignore').strip(),
-            ))
+                )
+            )
             return render_error(request, subproc_id)
 
         # success
@@ -239,11 +236,11 @@ def download_result(request, upload_id):
                 fh.read(),
                 content_type=mimetype,
             )
-            response['Content-Disposition'] = 'inline; filename=' + \
-                    'hxarc_{}.{}'.format(
-                        cache_info['original_filename'],
-                        cache_info['output_ext'],
-                    )
+            content_header = 'inline; filename=hxarc_{}.{}'.format(
+                cache_info['original_filename'],
+                cache_info['output_ext'],
+            )
+            response['Content-Disposition'] = content_header
         return response
     else:
         msg = 'expired upload_id({})'.format(upload_id)
@@ -266,21 +263,21 @@ def get_subproc_version(script_path):
             shell=True
         )
     except subprocess.CalledProcessError as e:
-        msg = 'exit code[{}] - {}'.format(
-            e.returncode, e.output)
-        logger.debug('COMMAND: ({}) -- {}'.format(
-            command, e.output.decode('utf-8', 'ignore').strip() ))
+        logger.debug('COMMAND[{}]: {} -- {}'.format(
+            e.returncode,
+            command,
+            e.output.decode('utf-8', 'ignore').strip()
+        ))
         return 'version not available'
 
     # success:
     version = result.decode('utf-8', 'ignore').strip()
-    logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
-            command, version))
+    logger.debug('COMMAND[0]: ({}) -- result({})'.format(command, version))
     return version
 
+
 def render_error(
-    request, subproc_id=None,
-    msgs=[], status_code=500):
+        request, subproc_id=None, msgs=[], status_code=500):
 
     global subproc_version
     subproc_name = 'app n/a'

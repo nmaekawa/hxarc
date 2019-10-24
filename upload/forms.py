@@ -1,6 +1,7 @@
 import json
 from django import forms
 
+
 class JsonListField(forms.Field):
     def to_python(self, value):
         """coerces input into json."""
@@ -9,7 +10,7 @@ class JsonListField(forms.Field):
         except Exception as e:
             raise forms.ValidationError(
                 'Invalid json in exts field({}): {}'.format(value, e),
-                code = 'invalid',
+                code='invalid',
             )
         else:
             return json_field
@@ -20,8 +21,9 @@ class JsonListField(forms.Field):
         if not isinstance(value, list):
             raise forms.ValidationError(
                 'Invalid exts field({}) : must be a list'.format(value),
-                code = 'invalid',
+                code='invalid',
             )
+
 
 class UploadFileForm(forms.Form):
     input_filename = forms.FileField()

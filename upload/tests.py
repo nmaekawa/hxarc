@@ -5,7 +5,6 @@ from django.conf import settings
 from upload.util import unpack_custom_parameters
 
 
-
 def test_request_params_ok():
     pmap = settings.HXARC_CUSTOM_PARAMETERS_MAP
     rparams = {
@@ -21,12 +20,10 @@ def test_request_params_ok():
 
     assert(len(lti_params) == 4)
     assert(
-        set(lti_params[pmap['custom_canvas_ids']['mapto']]) == \
-        set(['canvas1', 'canvas2', 'canvas3'])
+        set(lti_params[pmap['custom_canvas_ids']['mapto']]) == set(['canvas1', 'canvas2', 'canvas3'])
     )
     assert(
-        set(lti_params[pmap['custom_object_ids']['mapto']]) == \
-        set(['manifest1', 'manifest2', 'manifest3'])
+        set(lti_params[pmap['custom_object_ids']['mapto']]) == set(['manifest1', 'manifest2', 'manifest3'])
     )
     assert(lti_params[pmap['custom_layout']['mapto']] == '1x3')
     assert(lti_params[pmap['custom_view_type']['mapto']] == 'CrazyViewTypo')

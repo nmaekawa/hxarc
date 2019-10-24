@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get('HXARC_DJANGO_SECRET_KEY', 'CHANGE_ME')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost',  '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 allowed_hosts_other = os.environ.get('HXARC_ALLOWED_HOSTS', '')
 if allowed_hosts_other:
     ALLOWED_HOSTS.extend(allowed_hosts_other.split())
@@ -92,18 +92,6 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
-#    {
-#        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-#    },
-#    {
-#        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-#    },
-#    {
-#        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-#    },
-#    {
-#        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-#    },
 ]
 
 
@@ -246,7 +234,7 @@ HXARC_SUBPROCS = {
         # upload file valid extensions; it's a list and each item must have the
         # '.' dot prefix; order is important as the first item that matches the
         # upload filename will be considered the proper extension
-        'exts_in_upload': ['.tar.gz', '.gz',],
+        'exts_in_upload': ['.tar.gz', '.gz'],
     },
 }
 # this replaces default 'sample' subproc

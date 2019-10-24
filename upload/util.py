@@ -6,6 +6,7 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+
 def unpack_custom_parameters(post_params):
     request_params = {}
     pmap = settings.HXARC_CUSTOM_PARAMETERS_MAP
@@ -43,8 +44,8 @@ def validate_filename(filename, valid_exts):
             try:
                 basename = re.sub(r'\W+', '-', filename[:i-1])
             except Exception as e:
-                logger.error('invalid filename({}) for exts({})'.format(
-                    filename, valid_exts))
+                logger.error('invalid filename({}) for exts({}): {}'.format(
+                    filename, valid_exts, e))
                 return (None, None)
             else:
                 return (basename, ext[1:])
