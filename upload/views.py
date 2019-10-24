@@ -80,6 +80,10 @@ def lti_upload(request):
             'form_action': reverse(subproc_id),
             'subproc_name': subproc_conf['display_name'],
             'subproc_version': subproc_version[subproc_id],
+            'input_filename_label': subproc_conf.get(
+                'display_label', 'course export tarball (.tar.gz)'),
+            'exts_in_upload': json.dumps(subproc_conf.get(
+                'exts_in_upload', ['.tar.gz'])),
         }
     )
 
