@@ -1,6 +1,7 @@
 
 import json
 import logging
+import mimetypes
 import os
 import re
 import subprocess
@@ -232,10 +233,11 @@ def download_result(request, upload_id):
     )
 
     if os.path.exists(upfile):
+        mimetype, _ = mimetypes.guess_type(upfile)
         with open(upfile, 'rb') as fh:
             response = HttpResponse(
                 fh.read(),
-                content_type='application/gzip',
+                content_type=mimetype,
             )
             response['Content-Disposition'] = 'inline; filename=' + \
                     'hxarc_{}.{}'.format(
