@@ -240,7 +240,7 @@ def download_result(request, upload_id):
                 fh.read(),
                 content_type=mimetype,
             )
-            content_header = 'inline; filename=hxarc_{}.{}'.format(
+            content_header = 'attachment; filename=hxarc_{}.{}'.format(
                 cache_info['original_filename'],
                 cache_info['output_ext'],
             )
