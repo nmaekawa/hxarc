@@ -45,15 +45,6 @@ def landing(request):
 @require_lti_launch
 def lti_upload(request):
 
-    # fetch or create lti user
-    # counting it's in edx, and properly configured to send username
-    username = request.POST['lis_person_sourcedid']
-    user, created = User.objects.get_or_create(username=username,
-                                               email='{}@hx.edu'.format(username))
-
-    # login user
-    login(request, user)
-
     # pick first configured subproc
     subproc_id = list(settings.HXARC_SUBPROCS)[0]
     subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
@@ -68,6 +59,25 @@ def lti_upload(request):
             request.user.username,
             __name__, subproc_version
         ))
+
+    # fetch or create lti user
+    # edx studio does not send a proper lti request; missing username
+    username = request.POST.get('lis_person_sourcedid', None)
+    if username is None:
+        msg = 'malformed lti request'
+        logger.error((
+            'missing lis_person_sourcedid in lti request; '
+            'maybe in edge? referer: {}').format(request.META['HTTP_REFERER']))
+        return render_error(
+            request, subproc_id,
+            ['malformed lti request'],
+            status_code=401,
+        )
+
+    # login user
+    user, created = User.objects.get_or_create(
+        username=username, email='{}@hx.edu'.format(username))
+    login(request, user)
 
     form = UploadFileForm()
     return render(
