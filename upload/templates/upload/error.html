@@ -3,8 +3,15 @@
 
 {% block content %}
     <main id="main-download">
-    <h4>Error {{ subproc_name }} v{{ subproc_version }}</h4>
-    <p>Error during processing your input file.</p>
+    <h4>Error {{ subproc_name }} {{ subproc_version }}</h4>
+    <p>Error in processing your input file.</p>
+    {% if errors %}
+    <ul>
+        {% for e in errors %}
+        <li>{{ e }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
     </main>
 
 {% endblock %}

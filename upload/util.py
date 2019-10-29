@@ -1,9 +1,11 @@
 
 import logging
+import re
 
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
 
 def unpack_custom_parameters(post_params):
     request_params = {}
@@ -25,16 +27,27 @@ def unpack_custom_parameters(post_params):
     return request_params
 
 
-def get_exts(filename):
-    """ expects a filename that ends with something like `<filename>.tar.gz`
+def validate_filename(filename, valid_exts):
+    """ validates upload filename, splits basename and ext.
 
-    returns the 2 rightmost extension as string `<ext>.<ext>`
+    assumes valid_exts is a list of file extension,
+        each file extension must include preceding `dot`
+        e.g. ['.json', '.txt', '.csv']
+    orders matter in this list. Say you have
+        filename:  'file.tar.gz'
+        exts: ['.gz', '.tar.gz']
+    the result is ('file.tar', 'gz')
     """
-    if filename.count('.') > 1:
-        (garbage, ext1, ext2) = filename.rsplit('.', 2)
-        return '{}.{}'.format(ext1.lower(), ext2.lower())
-    return None
-
-
-
+    for ext in valid_exts:
+        i = filename.find(ext)
+        if i > 0:
+            try:
+                basename = re.sub(r'\W+', '-', filename[:i-1])
+            except Exception as e:
+                logger.error('invalid filename({}) for exts({}): {}'.format(
+                    filename, valid_exts, e))
+                return (None, None)
+            else:
+                return (basename, ext[1:])
+    return (None, None)
 

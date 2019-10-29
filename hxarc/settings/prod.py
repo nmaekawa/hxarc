@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get('HXARC_DJANGO_SECRET_KEY', 'CHANGE_ME')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost',  '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 allowed_hosts_other = os.environ.get('HXARC_ALLOWED_HOSTS', '')
 if allowed_hosts_other:
     ALLOWED_HOSTS.extend(allowed_hosts_other.split())
@@ -92,18 +92,6 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
-#    {
-#        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-#    },
-#    {
-#        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-#    },
-#    {
-#        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-#    },
-#    {
-#        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-#    },
 ]
 
 
@@ -175,6 +163,19 @@ USE_L10N = True
 USE_TZ = True
 
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.environ.get(
+            'HXARC_FILE_CACHE_DIR', os.path.join(BASE_DIR, 'hxarc_filecache')),
+        'TIMETOUT': 86400,  # 1 day
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
+    }
+}
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 STATIC_URL = '/static/'
@@ -210,12 +211,30 @@ HXARC_UPLOAD_DIR = MEDIA_ROOT
 HXARC_UPLOAD_FILENAME = os.environ.get(
     'HXARC_UPLOAD_FILENAME', 'export')
 
+'''
+hxarc expectations about subprocs:
+1. to execute: <wrapper_path> <input_file>, where input_file valid
+    extensions are in list <exts_in_upload>
+2. subproc accepts argument `version_only` and prints out its version number
+    without any other text, e.g. "2.4.4"
+3. subproc prints out error messages that can be send to log to help debug
+4. subproc generates an output file in the same dir as the given input file,
+    and the output filename is <output_basename>.<output_ext>
+'''
 HXARC_SUBPROCS = {
-    'sample': {  # subproc_id
+    'sample': {
         'wrapper_path': os.path.join(BASE_DIR, 'files/hxarc_wrapper.sh'),
+        # subproc display_name in html
         'display_name': 'fake',
         # text in form for label of filename to be uploaded
         'display_label': 'course export tarball',
+        # subproc output filename
+        'output_basename': 'result',  # internal output filename
+        'output_ext': 'tar.gz',  # internal output filename
+        # upload file valid extensions; it's a list and each item must have the
+        # '.' dot prefix; order is important as the first item that matches the
+        # upload filename will be considered the proper extension
+        'exts_in_upload': ['.tar.gz', '.gz'],
     },
 }
 # this replaces default 'sample' subproc
@@ -226,6 +245,5 @@ if hxarc_subprocs:
 # this adds to hxarc_subprocs
 extra_subprocs = json.loads(os.environ.get('HXARC_SUBPROCS_EXTRA', '{}'))
 HXARC_SUBPROCS.update(extra_subprocs)
-
 
 

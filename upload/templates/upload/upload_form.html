@@ -2,10 +2,21 @@
 
 {% block content %}
     <main id="main-form">
-    <h4>{{ subproc_name }} v{{ subproc_version }}</h4>
+    <h4>{{ subproc_name }} {{ subproc_version }}</h4>
+        {% if form.errors %}
+        <h5>Errors</h5>
+        <ul>
+        {% for f, e in form.errors.items %}
+            {% for error in e %}
+            <li>{{ f }}: {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+        <ul>
+        {% endif %}
         <form action="{{ form_action }}" method="post" enctype="multipart/form-data"
             onsubmit="submit_upload.disabled=true; return true;">
             {% csrf_token %}
+            <input name="exts" type="hidden" value="{{ exts_in_upload }}"/>
             <label for="input_filename">{{ input_filename_label }}</label><br>
             <input name="input_filename" id="input_filename" type="file" required /><br>
             <input name="submit_upload" type="submit" value="upload"/>

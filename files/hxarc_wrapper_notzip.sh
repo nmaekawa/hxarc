@@ -19,30 +19,15 @@ then
         exit 0
     fi
 fi
-
-echo "***** untar/ungzip input file ${input_file}"
-# untar uploaded file
-tar xzf ${input_file} -C ${input_dir}
-
 echo
 echo "***** about to process input file ${input_file}"
 
-# create tmp result location
-result_dir=/tmp/${input_id}/result
-mkdir -p ${result_dir}
-
 # here is where the subproc script should be called
 # pretend to do some processing and generate output
-for file in $(find ${input_dir} -name "*.json" -print)
+for file in $(find ${input_dir} -name "*.csv" -print)
 do
-    cp $file ${result_dir}
+    cp $file ${input_dir}/result.json
 done
-
-echo "***** generating tar.gz"
-echo
-
-cd /tmp/${input_id}
-tar cvzf ${input_dir}/result.tar.gz result
 
 echo "***** all done"
 

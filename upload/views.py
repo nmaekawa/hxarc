@@ -1,14 +1,16 @@
 
+import json
 import logging
+import mimetypes
 import os
 import subprocess
 import uuid
 
 from django.conf import settings
-from django.contrib.auth import authenticate
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.files.storage import FileSystemStorage
 from django.http import Http404
 from django.http import HttpResponse
@@ -17,15 +19,15 @@ from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
 
-
 from hxarc import __version__ as hxarc_version
 from hxlti.decorators import require_lti_launch
 from .forms import UploadFileForm
-from .util import get_exts
-from .util import unpack_custom_parameters
+from .util import validate_filename
+
 
 subproc_version = None
 logger = logging.getLogger(__name__)
+
 
 def landing(request):
     return render(
@@ -43,15 +45,6 @@ def landing(request):
 @require_lti_launch
 def lti_upload(request):
 
-    # fetch or create lti user
-    # counting it's in edx, and properly configured to send username
-    username = request.POST['lis_person_sourcedid']
-    user, created = User.objects.get_or_create(username=username,
-                                               email='{}@hx.edu'.format(username))
-
-    # login user
-    login(request, user)
-
     # pick first configured subproc
     subproc_id = list(settings.HXARC_SUBPROCS)[0]
     subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
@@ -67,6 +60,25 @@ def lti_upload(request):
             __name__, subproc_version
         ))
 
+    # fetch or create lti user
+    # edx studio does not send a proper lti request; missing username
+    username = request.POST.get('lis_person_sourcedid', None)
+    if username is None:
+        msg = 'malformed lti request'
+        logger.error((
+            'missing lis_person_sourcedid in lti request; '
+            'maybe in edge? referer: {}').format(request.META['HTTP_REFERER']))
+        return render_error(
+            request, subproc_id,
+            ['malformed lti request'],
+            status_code=401,
+        )
+
+    # login user
+    user, created = User.objects.get_or_create(
+        username=username, email='{}@hx.edu'.format(username))
+    login(request, user)
+
     form = UploadFileForm()
     return render(
         request,
@@ -78,13 +90,20 @@ def lti_upload(request):
             'form_action': reverse(subproc_id),
             'subproc_name': subproc_conf['display_name'],
             'subproc_version': subproc_version[subproc_id],
+            'input_filename_label': subproc_conf.get(
+                'display_label', 'course export tarball (.tar.gz)'),
+            'exts_in_upload': json.dumps(subproc_conf.get(
+                'exts_in_upload', ['.tar.gz'])),
         }
     )
 
 
 @login_required
 def upload_file(request, subproc_id='sample'):
-    subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
+    if subproc_id not in settings.HXARC_SUBPROCS:
+        raise Http404('unknown subprocess({})'.format(subproc_id))
+    else:
+        subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
 
     global subproc_version
     if subproc_version is None:
@@ -97,9 +116,7 @@ def upload_file(request, subproc_id='sample'):
             __name__, subproc_version
         ))
 
-
     if request.method != 'POST':
-        #flash_errors(form)
         form = UploadFileForm()
         return render(
             request,
@@ -112,7 +129,9 @@ def upload_file(request, subproc_id='sample'):
                 'subproc_name': subproc_conf['display_name'],
                 'subproc_version': subproc_version[subproc_id],
                 'input_filename_label': subproc_conf.get(
-                    'display_label', 'course export tarball'),
+                    'display_label', 'course export tarball (.tar.gz)'),
+                'exts_in_upload': json.dumps(subproc_conf.get(
+                    'exts_in_upload', ['.tar.gz'])),
             }
         )
 
@@ -122,26 +141,44 @@ def upload_file(request, subproc_id='sample'):
         tarball = request.FILES['input_filename']
         fs = FileSystemStorage()
 
-        # save uploaded file in a subdir of HXARC_UPLOAD_DIR;
-        # this subdir is a uuid, so pretty sure it's unique named
-        ext = get_exts(tarball.name)
+        input_basename, input_ext = validate_filename(
+            tarball.name, form.cleaned_data['exts'])
+        if input_basename is None or input_ext is None:
+            msg = 'invalid filename ({}): valid extensions {}'.format(
+                tarball.name, form.cleaned_data['exts'])
+            logger.error(msg)
+            # invalid file extension
+            return render_error(
+                request, subproc_id, [msg],
+                status_code=400,
+            )
 
+        # save uploaded file in a subdir of HXARC_UPLOAD_DIR;
+        # this subdir is a uuid, so pretty sure it's uniquely named
         updir = os.path.join(settings.HXARC_UPLOAD_DIR, upid)
         os.mkdir(updir)  # create a dir for each upload
-        upfilename = os.path.join(
-            updir, '{}.{}'.format(settings.HXARC_UPLOAD_FILENAME, ext))
-        actual_filename = fs.save(upfilename, tarball)
+        upfullpath = os.path.join(
+            updir, '{}.{}'.format(
+                settings.HXARC_UPLOAD_FILENAME, input_ext))
+        fs.save(upfullpath, tarball)
+
+        cache.set(upid, {  # to be used in download
+            'subproc_id': subproc_id,
+            'original_filename': input_basename,
+            'output_basename': subproc_conf.get(
+                'output_basename', 'result'),
+            'output_ext': subproc_conf.get(
+                'output_ext', 'tar.gz'),
+        })
 
         logger.info('[{}] uploaded file({}) as ({})'.format(
             request.user.username,
-            tarball.name, upfilename))
-
+            tarball.name, upfullpath))
 
         command = '{} {}'.format(
             subproc_conf['wrapper_path'],
-            upfilename
+            upfullpath
         )
-
 
         try:
             result = subprocess.check_output(
@@ -150,32 +187,29 @@ def upload_file(request, subproc_id='sample'):
                 shell=True
             )
         except subprocess.CalledProcessError as e:
-            output_html = e.output.decode(
-                'utf-8', 'ignore').strip().replace('\n', '<br/>')
+            # debug purposes
+            #output_html = e.output.decode(
+            #    'utf-8', 'ignore').strip().replace('\n', '<br/>')
             msg = 'exit code[{}] - {}'.format(
                 e.returncode, e.output)
-            logger.warning('[{}] COMMAND: ({}) -- {}'.format(
-                request.user.username,
-                command,
-                e.output.decode('utf-8', 'ignore').strip(),
-            ))
-            return render(
-                request,
-                'upload/error.html',
-                {
-                    'hxarc_version': hxarc_version,
-                    'hxarc_subprocs': settings.HXARC_SUBPROCS,
-                    'subproc_name': subproc_conf['display_name'],
-                    'subproc_version': subproc_version[subproc_id],
-                }
+            logger.warning(
+                '[{}] COMMAND: ({})|exit({}) -- {}'.format(
+                    request.user.username,
+                    command,
+                    e.returncode,
+                    e.output.decode('utf-8', 'ignore').strip(),
+                )
             )
+            return render_error(request, subproc_id)
 
         # success
         logger.info('[{}] COMMAND: ({}) -- exit code[0] --- result({})'.format(
             request.user.username,
             command, result.decode('utf-8', 'ignore').strip()))
     else:
-        form = UploadFileForm()
+        # form not valid! probably malformed exts config
+        logger.error('form invalid; probably config exts not json [suspicious]')
+        return render_error(request, subproc_id)
 
     return render(
         request,
@@ -192,26 +226,50 @@ def upload_file(request, subproc_id='sample'):
 
 @login_required
 def download_result(request, upload_id):
-    upfile = os.path.join(settings.HXARC_UPLOAD_DIR, upload_id, 'result.tar.gz')
+    cache_info = cache.get(upload_id)
+    if cache_info is None:
+        msg = 'invalid upload_id({})'.format(upload_id)
+        return render_error(
+            request,
+            subproc_id=None,
+            msgs=[msg],
+            status_code=404)
+
+    upfile = os.path.join(
+        settings.HXARC_UPLOAD_DIR, upload_id,
+        '{}.{}'.format(
+            cache_info['output_basename'],
+            cache_info['output_ext'],
+        )
+    )
+
     if os.path.exists(upfile):
+        mimetype, _ = mimetypes.guess_type(upfile)
         with open(upfile, 'rb') as fh:
             response = HttpResponse(
                 fh.read(),
-                content_type='application/gzip',
+                content_type=mimetype,
             )
-            response['Content-Disposition'] = 'inline; filename=' + \
-                    'hxarc_{}.tar.gz'.format(upload_id)
+            content_header = 'attachment; filename=hxarc_{}.{}'.format(
+                cache_info['original_filename'],
+                cache_info['output_ext'],
+            )
+            response['Content-Disposition'] = content_header
         return response
     else:
-        return Http404;
+        msg = 'expired upload_id({})'.format(upload_id)
+        logger.error(msg)
+        return render_error(
+            request,
+            subproc_id=cache_info['subproc_id'],
+            msgs=[msg],
+            status_code=404)
 
 
 def get_subproc_version(script_path):
     """execute wrapper script to get subproc version."""
 
-    logger = logging.getLogger(__name__)
     command = '{} version_only'.format(script_path)
-
     try:
         result = subprocess.check_output(
             command,
@@ -219,20 +277,45 @@ def get_subproc_version(script_path):
             shell=True
         )
     except subprocess.CalledProcessError as e:
-        output_html = e.output.decode(
-            'utf-8', 'ignore').strip().replace('\n', '<br/>')
-        msg = 'exit code[{}] - {}'.format(
-            e.returncode, e.output)
-        logger.debug('COMMAND: ({}) -- {}'.format(
+        logger.debug('COMMAND[{}]: {} -- {}'.format(
+            e.returncode,
             command,
-            e.output.decode('utf-8', 'ignore').strip(),
+            e.output.decode('utf-8', 'ignore').strip()
         ))
         return 'version not available'
 
-    # success
+    # success:
     version = result.decode('utf-8', 'ignore').strip()
-    logger.debug('COMMAND: ({}) -- exit code[0] --- result({})'.format(
-            command, version))
-
+    logger.debug('COMMAND[0]: ({}) -- result({})'.format(command, version))
     return version
+
+
+def render_error(
+        request, subproc_id=None, msgs=[], status_code=500):
+
+    global subproc_version
+    subproc_name = 'app n/a'
+    subproc_v = 'version n/a'
+    if subproc_id:
+        subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
+        subproc_name = subproc_conf['display_name']
+        subproc_v = subproc_version[subproc_id]
+
+    return render(
+        request,
+        'upload/error.html',
+        {
+            'hxarc_version': hxarc_version,
+            'hxarc_subprocs': settings.HXARC_SUBPROCS,
+            'subproc_name': subproc_name,
+            'subproc_version': subproc_v,
+            'errors': msgs,
+        },
+        status=status_code,
+    )
+
+
+
+
+
 
