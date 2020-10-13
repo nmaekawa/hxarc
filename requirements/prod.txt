@@ -1,4 +1,5 @@
 Django==2.2.4
+django-cookies-samesite==0.6.6
 
 python-dotenv==0.10.3
 git+https://github.com/nmaekawa/hxlti-djapp.git#egg=hxlti-djapp

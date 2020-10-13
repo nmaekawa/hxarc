@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django_cookies_samesite.middleware.CookiesSameSite',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -201,9 +202,10 @@ HXLTI_REDIS_URL = os.environ.get(
 #
 CORS_ORIGIN_ALLOW_ALL = True  # accept requests from anyone
 
-# send cookies even if cross-site
-CSRF_COOKIE_SAMESITE = None
-SESSION_COOKIE_SAMESITE = None
+# replace when django 3.1, see https://github.com/jotes/django-cookies-samesite
+# due to chrome 80.X, see https://www.chromium.org/updates/same-site
+DCS_SESSION_COOKIE_SAMESITE = 'None'
+DCS_CSRF_COOKIE_SAMESITE = 'None'
 
 # django checks if it's trying to write files (uploads) outside
 # BASE_DIR or MEDIA_ROOT...
