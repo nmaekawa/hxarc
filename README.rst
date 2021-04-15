@@ -18,7 +18,7 @@ Make sure you have docker_ installed to try this quickstart.
     # start docker services
     $> docker-compose up
     $> docker-compose exec web python manage.py migrate
-    $> docker-compese exec web python manage.py createsupersuser
+    $> docker-compose exec hxarc python manage.py createsuperuser
     $> open http://localhost:8000/admin
 
 To login into the django admin UI, use the user:password created above in
