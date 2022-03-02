@@ -2,7 +2,7 @@
 from django.conf import settings
 from django.urls import path
 
-from . import views
+from hxarc.apps.upload import views
 
 urlpatterns = [
     path('launch/', views.lti_upload, name='launch'),

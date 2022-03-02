@@ -21,8 +21,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from hxarc import __version__ as hxarc_version
 from hxlti.decorators import require_lti_launch
-from .forms import UploadFileForm
-from .util import validate_filename
+from hxarc.apps.upload.forms import UploadFileForm
+from hxarc.apps.upload.util import validate_filename
 
 
 subproc_version = None

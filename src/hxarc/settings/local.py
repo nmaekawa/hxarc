@@ -1,4 +1,4 @@
-from .dev import *
+from hxarc.settings.dev import *
 
 DEBUG = True
 

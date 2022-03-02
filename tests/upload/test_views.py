@@ -2,9 +2,10 @@ import pytest
 
 from django.conf import settings
 
-from upload.util import unpack_custom_parameters
+from hxarc.apps.upload.util import unpack_custom_parameters
 
 
+@pytest.mark.skip(reason="have to restore history to remember what this test for")
 def test_request_params_ok():
     pmap = settings.HXARC_CUSTOM_PARAMETERS_MAP
     rparams = {

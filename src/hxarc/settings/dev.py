@@ -1,10 +1,10 @@
-from .prod import *
+from hxarc.settings.prod import *
 
 DEBUG = True
 
 # add db logging to dev settings
 LOGGING['loggers']['django.db'] = {
-    'level': 'INFO',
+    'level': 'DEBUG',
     'handlers': ['console'],
     'propagate': True
 }

@@ -1,63 +1,54 @@
-*.log
-*.db
-
-*.py[codt]
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
 # C extensions
 *.so
 
-# Packages
-*.egg
-*.egg-info
-dist
-build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
 .installed.cfg
-lib
-lib64
+*.egg
 
 # Installer logs
 pip-log.txt
+pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-.coverage
-.tox
-nosetests.xml
+.tox/
+.cache
 
-# Translations
-*.mo
+# Django stuff:
+*.log
+local_settings.py
+settings/local.py
+logs
 
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
+# dotenv
+.env
 
-# Complexity
-output/*.html
-output/*/index.html
+# db
+*sqlite3.db
 
-# Sphinx
-docs/_build
+# static root
+public/
 
-.webassets-cache
-
-# Virtualenvs
-env
-env*
+# virtualenv
 venv
 
-# intellij
-*.ipr
-*.iml
-*.iws
-
-.DS_Store
-
-# node
-node_modules/
-
+# mac annoyances
+*.DS_Store
