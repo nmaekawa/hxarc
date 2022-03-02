@@ -25,7 +25,7 @@ with open("README.rst") as readme_file:
 
 requirements = [
     "Django",
-    'django-cors-headers',
+    "django-cors-headers",
     "python-dotenv",
 ]
 

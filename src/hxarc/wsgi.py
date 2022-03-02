@@ -7,15 +7,13 @@ For more information on this file, see
 https://docs.djangoproject.com/en/2.0/howto/deployment/wsgi/
 """
 
-from dotenv import load_dotenv
 import os
 
 from django.core.wsgi import get_wsgi_application
-
+from dotenv import load_dotenv
 
 # if dotenv file, load it
-dotenv_path = os.environ.get(
-    'HXARC_DOTENV_PATH', None)
+dotenv_path = os.environ.get("HXARC_DOTENV_PATH", None)
 if dotenv_path:
     load_dotenv(dotenv_path)
 
