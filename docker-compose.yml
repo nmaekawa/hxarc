@@ -12,11 +12,14 @@ services:
     build: .
     image: hx/hxarc:dev
     command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    volumes:
+      - .:/code
     ports:
       - "8000:8000"
     depends_on:
       - redis
     environment:
+      HXARC_DOTENV_PATH: "/code/docker_dotenv.env"
       REDIS_URL: "redis://redis:6379/0"
     networks:
       default:

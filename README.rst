@@ -2,7 +2,7 @@
 hxarc
 ===============================
 
-web version of https://github.com/Colin-Fredericks/hx_util
+webapp to run 3rd party scripts, like https://github.com/Colin-Fredericks/hx_util
 
 
 quickstart
@@ -11,10 +11,9 @@ quickstart
 Make sure you have docker_ installed to try this quickstart.
 
 ::
-
     # clone this repo
     $> git clone https://github.com/nmaekawa/hxarc
-    
+
     # start docker services
     $> docker-compose up
     $> docker-compose exec web python manage.py migrate
@@ -32,9 +31,15 @@ required:
     - consumer-secret: "secret-just-created"
     - lis_person_sourcedid: "some-string"
 
+
+unit tests
+==========
+
+::
+    # from the project root dir
+    $> pytest test
+
 ---eop
 
 .. _docker: https://www.docker.com
-
-
 
