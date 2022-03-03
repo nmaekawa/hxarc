@@ -1,3 +1,4 @@
+import importlib
 import logging
 import re
 
@@ -52,3 +53,13 @@ def validate_filename(filename, valid_exts):
             else:
                 return (basename, ext[1:])
     return (None, None)
+
+
+def get_class_object(fullclassname):
+    modulename, classname = fullclassname.rsplit(".", 1)
+    ClassObject = getattr(importlib.import_module(modulename), classname)
+    return ClassObject
+
+
+
+

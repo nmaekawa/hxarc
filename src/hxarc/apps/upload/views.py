@@ -19,8 +19,8 @@ from django.views.decorators.csrf import csrf_exempt
 from hxlti.decorators import require_lti_launch
 
 from hxarc import __version__ as hxarc_version
-from hxarc.apps.upload.forms import UploadFileForm
-from hxarc.apps.upload.util import validate_filename
+#from hxarc.apps.upload.forms import UploadFileForm
+from hxarc.apps.upload.util import validate_filename, get_class_object
 
 subproc_version = None
 logger = logging.getLogger(__name__)
@@ -81,7 +81,7 @@ def lti_upload(request):
     )
     login(request, user)
 
-    form = UploadFileForm()
+    form = get_class_object(subproc_conf("form_classname"])()
     return render(
         request,
         "upload/upload_form.html",
@@ -121,7 +121,7 @@ def upload_file(request, subproc_id="sample"):
         )
 
     if request.method != "POST":
-        form = UploadFileForm()
+        form = get_class_object(subproc_conf("form_classname"])()
         return render(
             request,
             "upload/upload_form.html",
@@ -142,7 +142,7 @@ def upload_file(request, subproc_id="sample"):
         )
 
     upid = str(uuid.uuid4())
-    form = UploadFileForm(request.POST, request.FILES)
+    form = get_class_object(subproc_conf("form_classname"])(request.POST, request.FILES)
     if form.is_valid():
         tarball = request.FILES["input_filename"]
         fs = FileSystemStorage()
