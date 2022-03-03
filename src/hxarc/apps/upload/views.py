@@ -81,7 +81,7 @@ def lti_upload(request):
     )
     login(request, user)
 
-    form = get_class_object(subproc_conf("form_classname"])()
+    form = get_class_object(subproc_conf["form_classname"])()
     return render(
         request,
         "upload/upload_form.html",
@@ -121,7 +121,7 @@ def upload_file(request, subproc_id="sample"):
         )
 
     if request.method != "POST":
-        form = get_class_object(subproc_conf("form_classname"])()
+        form = get_class_object(subproc_conf["form_classname"])()
         return render(
             request,
             "upload/upload_form.html",
@@ -142,7 +142,7 @@ def upload_file(request, subproc_id="sample"):
         )
 
     upid = str(uuid.uuid4())
-    form = get_class_object(subproc_conf("form_classname"])(request.POST, request.FILES)
+    form = get_class_object(subproc_conf["form_classname"])(request.POST, request.FILES)
     if form.is_valid():
         tarball = request.FILES["input_filename"]
         fs = FileSystemStorage()
