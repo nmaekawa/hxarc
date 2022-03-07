@@ -82,9 +82,10 @@ def lti_upload(request):
     login(request, user)
 
     form = get_class_object(subproc_conf["form_classname"])()
+    # newrun: set defaults into form
     return render(
         request,
-        "upload/upload_form.html",
+        subproc_conf["form_template_path"],
         {
             "hxarc_version": hxarc_version,
             "hxarc_subprocs": settings.HXARC_SUBPROCS,
@@ -122,9 +123,10 @@ def upload_file(request, subproc_id="sample"):
 
     if request.method != "POST":
         form = get_class_object(subproc_conf["form_classname"])()
+        # newrun: set defaults into form
         return render(
             request,
-            "upload/upload_form.html",
+            subproc_conf["form_template_path"],
             {
                 "hxarc_version": hxarc_version,
                 "hxarc_subprocs": settings.HXARC_SUBPROCS,
@@ -171,6 +173,10 @@ def upload_file(request, subproc_id="sample"):
             updir, "{}.{}".format(settings.HXARC_UPLOAD_FILENAME, input_ext)
         )
         fs.save(upfullpath, tarball)
+
+        #
+        # newrun: pack form inputs to feed to wrapper
+        #
 
         cache.set(
             upid,

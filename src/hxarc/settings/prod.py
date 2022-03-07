@@ -211,6 +211,8 @@ HXARC_SUBPROCS = {
     "sample": {
         # for extra inputs, create a new form to support needed form fields
         "form_classname": "hxarc.apps.upload.forms.UploadFileForm",
+        "form_template_path": "upload/upload_form.html",
+
         "wrapper_path": os.path.join(BASE_DIR, "files/hxarc_wrapper.sh"),
         # subproc display_name in html
         "display_name": "fake",

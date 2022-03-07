@@ -29,3 +29,13 @@ class JsonListField(forms.Field):
 class UploadFileForm(forms.Form):
     input_filename = forms.FileField()
     exts = JsonListField()
+
+class UploadNewRunForm(forms.Form):
+    input_filename = forms.FileField()
+    exts = JsonListField()
+
+    start = forms.DateTimeField()
+    end= forms.DateTimeField()
+    run = forms.CharField()
+
+
