@@ -174,9 +174,16 @@ def upload_file(request, subproc_id="sample"):
         )
         fs.save(upfullpath, tarball)
 
-        #
         # newrun: pack form inputs to feed to wrapper
-        #
+        is_json_input = len(form.cleaned_data) > 1  # assuming exts always present
+        if is_json_input:
+            input_path = os.path.join(
+                updir,
+                "{}.json".format(settings.HXARC_INPUT_FILENAME_JSON)
+            )
+            input_data = json.dumps(form.cleaned_data)
+            with open(input_path, "w") as ifd:
+                ifd.write(input_data)
 
         cache.set(
             upid,
@@ -194,7 +201,10 @@ def upload_file(request, subproc_id="sample"):
             )
         )
 
-        command = "{} {}".format(subproc_conf["wrapper_path"], upfullpath)
+        command = "{} {}".format(
+            subproc_conf["wrapper_path"],
+            input_path if is_json_input else upfullpath,
+        )
 
         try:
             result = subprocess.check_output(
@@ -223,7 +233,7 @@ def upload_file(request, subproc_id="sample"):
         )
     else:
         # form not valid! probably malformed exts config
-        logger.error("form invalid; probably config exts not json [suspicious]")
+        logger.error("form invalid: {}".format(form.errors))
         return render_error(request, subproc_id)
 
     return render(

@@ -196,6 +196,8 @@ DCS_CSRF_COOKIE_SAMESITE = "None"
 # BASE_DIR or MEDIA_ROOT...
 HXARC_UPLOAD_DIR = MEDIA_ROOT
 HXARC_UPLOAD_FILENAME = os.environ.get("HXARC_UPLOAD_FILENAME", "export")
+HXARC_INPUT_FILENAME_JSON = os.environ.get(
+        "HXARC_INPUT_FILENAME_JSON", "hxarc_input_data")
 
 """
 hxarc expectations about subprocs:
