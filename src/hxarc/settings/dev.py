@@ -1,4 +1,4 @@
-from hxarc.settings.prod import *
+from hxarc.settings.base import *  # noqa
 
 DEBUG = True
 
