@@ -40,9 +40,9 @@ class UploadNewRunForm(forms.Form):
 
     def todict(self):
         result = {}
-        result["start"] = self.start.replace(microsecond=0).isoformat()
-        result["end"] = self.end.replace(microsecond=0).isoformat()
-        result["run"] = self.run
+        result["start"] = self.cleaned_data["start"].replace(microsecond=0).isoformat()
+        result["end"] = self.cleaned_data["end"].replace(microsecond=0).isoformat()
+        result["run"] = self.cleaned_data["run"]
         return result
 
 
