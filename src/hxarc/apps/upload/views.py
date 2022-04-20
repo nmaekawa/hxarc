@@ -185,7 +185,7 @@ def upload_file(request, subproc_id="sample"):
             input_data["tarfile"] = upfullpath  # TODO: this is specific to make_new_run!
             input_path = os.path.join(
                 updir,
-                "{}.json".format(settings.HXARC_INPUT_FILENAME_JSON)
+                settings.HXARC_INPUT_FILENAME_JSON,
             )
             with open(input_path, "w") as ifd:
                 ifd.write(json.dumps(input_data))
@@ -206,11 +206,7 @@ def upload_file(request, subproc_id="sample"):
             )
         )
 
-        command = "{} {}".format(
-            subproc_conf["wrapper_path"],
-            input_path if is_json_input else upfullpath,
-        )
-
+        command = "{} {}".format(subproc_conf["wrapper_path"], upfullpath)
         try:
             result = subprocess.check_output(
                 command, stderr=subprocess.STDOUT, shell=True
