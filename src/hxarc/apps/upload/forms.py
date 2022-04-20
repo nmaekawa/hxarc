@@ -38,4 +38,11 @@ class UploadNewRunForm(forms.Form):
     end= forms.DateTimeField()
     run = forms.CharField()
 
+    def todict(self):
+        result = {}
+        result["start"] = self.start.replace(microsecond=0).isoformat()
+        result["end"] = self.end.replace(microsecond=0).isoformat()
+        result["run"] = self.run
+        return result
+
 

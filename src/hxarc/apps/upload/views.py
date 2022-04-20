@@ -173,17 +173,22 @@ def upload_file(request, subproc_id="sample"):
             updir, "{}.{}".format(settings.HXARC_UPLOAD_FILENAME, input_ext)
         )
         fs.save(upfullpath, tarball)
+        # remove after saving bc cannot jsonify tarfile later
+        # so, here, assuming input always have an uploaded file!
+        del form.cleaned_data["input_filename"]
 
         # newrun: pack form inputs to feed to wrapper
         is_json_input = len(form.cleaned_data) > 1  # assuming exts always present
         if is_json_input:
+            # serialize inputs
+            input_data = form.todict()
+            input_data["tarfile"] = upfullpath  # TODO: this is specific to make_new_run!
             input_path = os.path.join(
                 updir,
                 "{}.json".format(settings.HXARC_INPUT_FILENAME_JSON)
             )
-            input_data = json.dumps(form.cleaned_data)
             with open(input_path, "w") as ifd:
-                ifd.write(input_data)
+                ifd.write(json.dumps(input_data))
 
         cache.set(
             upid,
