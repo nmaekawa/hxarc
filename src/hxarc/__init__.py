@@ -2,4 +2,4 @@
 
 __author__ = "nmaekawa"
 __email__ = "nmaekawa@g.harvard.edu"
-__version__ = "3.2.0"  # update dependency versions
+__version__ = "4.0.0"  # newrun: config forms for extra inputs
