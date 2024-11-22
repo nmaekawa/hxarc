@@ -196,9 +196,7 @@ CORS_ALLOW_ALL_ORIGINS = True  # accept requests from anyone
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"
 
-# django checks if it's trying to write files (uploads) outside
-# BASE_DIR or MEDIA_ROOT...
-HXARC_UPLOAD_DIR = MEDIA_ROOT
+# normalize uploaded files (differentiate via subdir under MEDIA_ROOT)
 HXARC_UPLOAD_FILENAME = os.environ.get("HXARC_UPLOAD_FILENAME", "export")
 HXARC_INPUT_FILENAME_JSON = os.environ.get(
     "HXARC_INPUT_FILENAME_JSON", "hxarc_input_data.json"

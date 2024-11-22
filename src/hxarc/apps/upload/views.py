@@ -164,14 +164,18 @@ def upload_file(request, subproc_id="sample"):
                 status_code=400,
             )
 
-        # save uploaded file in a subdir of HXARC_UPLOAD_DIR;
+        # save uploaded file in a subdir of MEDIA_ROOT;
         # this subdir is a uuid, so pretty sure it's uniquely named
-        updir = os.path.join(settings.HXARC_UPLOAD_DIR, upid)
+        updir = os.path.join(settings.MEDIA_ROOT, upid)
         os.mkdir(updir)  # create a dir for each upload
         upfullpath = os.path.join(
             updir, "{}.{}".format(settings.HXARC_UPLOAD_FILENAME, input_ext)
         )
-        fs.save(upfullpath, tarball)
+        # FileSystemStorage does not like abs paths, so set relative path to MEDIA_ROOT
+        fs.save(
+            "{}/{}.{}".format(upid, settings.HXARC_UPLOAD_FILENAME, input_ext),
+            tarball,
+        )
         # remove after saving bc cannot jsonify tarfile later
         # so, here, assuming input always have an uploaded file!
         del form.cleaned_data["input_filename"]
@@ -259,7 +263,7 @@ def download_result(request, upload_id):
         return render_error(request, subproc_id=None, msgs=[msg], status_code=404)
 
     upfile = os.path.join(
-        settings.HXARC_UPLOAD_DIR,
+        settings.MEDIA_ROOT,  # saved in FileSytemStorage
         upload_id,
         "{}.{}".format(
             cache_info["output_basename"],
