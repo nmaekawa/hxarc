@@ -59,7 +59,3 @@ def get_class_object(fullclassname):
     modulename, classname = fullclassname.rsplit(".", 1)
     ClassObject = getattr(importlib.import_module(modulename), classname)
     return ClassObject
-
-
-
-

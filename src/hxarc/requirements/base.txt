@@ -1,8 +1,0 @@
-Django==2.2.27
-django-cookies-samesite==0.9.0
-
-python_dotenv>=0.19.0
-git+https://github.com/nmaekawa/hxlti-djapp.git#egg=hxlti-djapp
-
-django-cors-headers==3.11.0
-

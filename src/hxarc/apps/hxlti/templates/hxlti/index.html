@@ -1,0 +1,15 @@
+
+<html lang="en">
+    <head>
+        <title>lti post params</title>
+    </head>
+
+    <body>
+        <ul>
+        {% for key, value in request.POST.items %}
+            <li>{{ key }} : {{ value }}</li>
+        {% endfor %}
+        </ul>
+    </body>
+</html>
+

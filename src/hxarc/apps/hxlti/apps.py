@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class UploadConfig(AppConfig):
+class HxltiConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "hxarc.apps.upload"
+    name = "hxarc.apps.hxlti"

@@ -16,11 +16,12 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
-from hxlti.decorators import require_lti_launch
 
 from hxarc import __version__ as hxarc_version
-#from hxarc.apps.upload.forms import UploadFileForm
-from hxarc.apps.upload.util import validate_filename, get_class_object
+from hxarc.apps.hxlti.decorators import require_lti_launch
+
+# from hxarc.apps.upload.forms import UploadFileForm
+from hxarc.apps.upload.util import get_class_object, validate_filename
 
 subproc_version = None
 logger = logging.getLogger(__name__)
@@ -41,7 +42,6 @@ def landing(request):
 @xframe_options_exempt  # allows rendering in Canvas|edx frame
 @require_lti_launch
 def lti_upload(request):
-
     # pick first configured subproc
     subproc_id = list(settings.HXARC_SUBPROCS)[0]
     subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
@@ -61,7 +61,6 @@ def lti_upload(request):
     # edx studio does not send a proper lti request; missing username
     username = request.POST.get("lis_person_sourcedid", None)
     if username is None:
-        msg = "malformed lti request"
         logger.error(
             (
                 "missing lis_person_sourcedid in lti request; "
@@ -182,7 +181,9 @@ def upload_file(request, subproc_id="sample"):
         if is_json_input:
             # serialize inputs
             input_data = form.todict()
-            input_data["tarfile"] = upfullpath  # TODO: this is specific to make_new_run!
+            input_data["tarfile"] = (
+                upfullpath  # TODO: this is specific to make_new_run!
+            )
             input_path = os.path.join(
                 updir,
                 settings.HXARC_INPUT_FILENAME_JSON,
@@ -308,7 +309,6 @@ def get_subproc_version(script_path):
 
 
 def render_error(request, subproc_id=None, msgs=[], status_code=500):
-
     global subproc_version
     subproc_name = "app n/a"
     subproc_v = "version n/a"

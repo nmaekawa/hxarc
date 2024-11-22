@@ -30,12 +30,13 @@ class UploadFileForm(forms.Form):
     input_filename = forms.FileField()
     exts = JsonListField()
 
+
 class UploadNewRunForm(forms.Form):
     input_filename = forms.FileField()
     exts = JsonListField()
 
     start = forms.DateTimeField()
-    end= forms.DateTimeField()
+    end = forms.DateTimeField()
     run = forms.CharField()
 
     def todict(self):
@@ -44,5 +45,3 @@ class UploadNewRunForm(forms.Form):
         result["end"] = self.cleaned_data["end"].replace(microsecond=0).isoformat()
         result["run"] = self.cleaned_data["run"]
         return result
-
-

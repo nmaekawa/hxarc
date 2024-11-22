@@ -1,4 +1,4 @@
-version: '3'
+
 services:
   redis:
     image: redis:5
@@ -11,9 +11,10 @@ services:
   hxarc:
     build: .
     image: hx/hxarc:dev
-    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    command: ["./docker_entrypoint.sh"]
     volumes:
       - .:/code
+      - data:/data
     ports:
       - "8000:8000"
     depends_on:
@@ -29,6 +30,7 @@ services:
 
 volumes:
   redis-data:
+  data:
 
 networks:
   public:

@@ -1,13 +1,20 @@
-FROM python:3.8-slim
-ENV PYTHONUNBUFFERED 1
+FROM python:3.12-slim
+ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update -y
-RUN apt-get install -y git
+RUN apt-get install sqlite3
 
-RUN mkdir /code
+RUN pip install --upgrade pip
+RUN pip install uv
+
 WORKDIR /code
-COPY . /code/
+COPY ./pyproject.toml .
 
-RUN pip install -r requirements.txt
-RUN pip install -e .
+RUN uv pip install --system -r ./pyproject.toml
+
+COPY . .
+RUN uv pip install --system .
+
+RUN chmod +x ./docker_entrypoint.sh
+ENTRYPOINT ["./docker_entrypoint.sh"]
 

@@ -3,7 +3,7 @@ import os
 
 from dotenv import load_dotenv
 
-from hxarc.settings.dev import *
+from hxarc.settings.base import *
 
 dotenv_path = os.environ.get("HXARC_DOTENV_PATH", None)
 if dotenv_path:
@@ -12,6 +12,12 @@ if dotenv_path:
 DEBUG = True
 
 HXLTI_ENFORCE_SSL = False
+
+LOGGING["loggers"]["django.db"] = {
+    "level": "DEBUG",
+    "handlers": ["console"],
+    "propagate": True,
+}
 
 # Django Extensions
 # http://django-extensions.readthedocs.org/en/latest/

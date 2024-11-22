@@ -1,16 +1,56 @@
 
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "hxarc"
+authors = [
+    {name="nmaekawa", email="nmaekawa@g.harvard.edu"},
+]
+description = "webapp to run 3rd party scripts"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django-cors-headers>=4.6.0",
+    "django==4.2.16",
+    "python-dotenv>=1.0.1",
+    "lti>=0.9.5",
+    "redis>=5.2.0",
+]
+dynamic = ["version"]
+
+
+[tool.setuptools.dynamic]
+version = {attr = "hxarc.__version__"}
+
+
 [tool.isort]
-profile = 'black'
+profile = "black"
 
 [tool.black]
-target-version = ['py36']
+target-version = ["py312"]
 exclude = '''
 /(
-        \.eggs
-      | \.git
-      | \.tox
-      | \.venv
-      | build
-      | dist
+      \.eggs
+    | \.git
+    | \.tox
+    | \.venv
+    | build
+    | dist
 )/
 '''
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+pythonpath = "src"
+env = [
+    "DJANGO_SETTINGS_MODULE=hxarc.settings.test",
+]
+
+
