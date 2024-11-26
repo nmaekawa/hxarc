@@ -14,7 +14,7 @@ services:
     command: ["./docker_entrypoint.sh"]
     volumes:
       - .:/code
-      - data:/data
+      - hxarc-data:/data
     ports:
       - "8000:8000"
     depends_on:
@@ -30,7 +30,7 @@ services:
 
 volumes:
   redis-data:
-  data:
+  hxarc-data:
 
 networks:
   public:
