@@ -66,5 +66,7 @@ class Command(BaseCommand):
                 user.password = password
                 user.is_superuser = True if kwargs["is_admin"] else False
                 user.save()
+                print("created user({})".format(username))
             else:
-                return "user already exists"
+                print("user already exists")
+                return 1

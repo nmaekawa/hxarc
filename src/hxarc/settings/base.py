@@ -121,15 +121,6 @@ LOGGING = {
             "formatter": "syslog",
             "stream": "ext://sys.stdout",
         },
-        "errorfile_handler": {
-            "level": "DEBUG",
-            "class": "logging.handlers.RotatingFileHandler",
-            "formatter": "simple",
-            "filename": os.path.join(BASE_DIR, PROJECT_NAME + "_errors.log"),
-            "maxBytes": 10485760,  # 10MB
-            "backupCount": 7,
-            "encoding": "utf8",
-        },
     },
     "loggers": {
         "upload": {"level": "DEBUG", "handlers": ["console"], "propagate": True},
@@ -149,19 +140,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": os.environ.get(
-            "HXARC_FILE_CACHE_DIR", os.path.join(BASE_DIR, "hxarc_filecache")
-        ),
-        "TIMEOUT": 86400,  # 1 day
-        "OPTIONS": {
-            "MAX_ENTRIES": 1000,
-        },
-    }
-}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -184,6 +162,20 @@ HXLTI_DUMMY_CONSUMER_KEY = os.environ.get(
     "HXLTI_DUMMY_CONSUMER_KEY", "dummy_A4A1E6A8230C451FA40EA87EFD50B736"
 )
 HXLTI_REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+
+# stash upload file info to generate corresponding download assets
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": HXLTI_REDIS_URL,
+        "TIMEOUT": 86400,  # 1 day
+        "OPTIONS": {
+            "db": "10",
+            "pool_class": "redis.BlockingConnectionPool",
+        },
+    }
+}
+
 
 #
 # settings for django-cors-headers
