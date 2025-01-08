@@ -10,17 +10,17 @@ services:
 
   hxarc:
     build: .
-    image: hx/hxarc:dev
+    image: hxarc:docker
     command: ["./docker_entrypoint.sh"]
     volumes:
       - .:/code
-      - data:/data
+      - ./data:/data
     ports:
       - "8000:8000"
     depends_on:
       - redis
     environment:
-      HXARC_DOTENV_PATH: "/code/docker_dotenv.env"
+      HXARC_DOTENV_PATH: "/home/appuser/docker_dotenv.env"
       REDIS_URL: "redis://redis:6379/0"
     networks:
       default:
