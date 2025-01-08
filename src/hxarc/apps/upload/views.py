@@ -171,11 +171,13 @@ def upload_file(request, subproc_id="sample"):
         upfullpath = os.path.join(
             updir, "{}.{}".format(settings.HXARC_UPLOAD_FILENAME, input_ext)
         )
+
         # FileSystemStorage does not like abs paths, so set relative path to MEDIA_ROOT
-        fs.save(
-            "{}/{}.{}".format(upid, settings.HXARC_UPLOAD_FILENAME, input_ext),
-            tarball,
+        uprelativepath = os.path.join(
+            upid, "{}.{}".format(settings.HXARC_UPLOAD_FILENAME, input_ext)
         )
+        fs.save(uprelativepath, tarball)
+
         # remove after saving bc cannot jsonify tarfile later
         # so, here, assuming input always have an uploaded file!
         del form.cleaned_data["input_filename"]
