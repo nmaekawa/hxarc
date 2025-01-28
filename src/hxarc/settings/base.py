@@ -186,7 +186,9 @@ CORS_ALLOW_ALL_ORIGINS = True  # accept requests from anyone
 # super lax cross-site policies
 #
 SESSION_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SECURE = True
 
 # normalize uploaded files (differentiate via subdir under MEDIA_ROOT)
 HXARC_UPLOAD_FILENAME = os.environ.get("HXARC_UPLOAD_FILENAME", "export")
