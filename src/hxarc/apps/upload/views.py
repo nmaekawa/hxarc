@@ -27,35 +27,12 @@ subproc_version = None
 logger = logging.getLogger(__name__)
 
 
-def landing(request):
-    return render(
-        request,
-        "upload/landing.html",
-        {
-            "hxarc_version": hxarc_version,
-            "hxarc_subprocs": settings.HXARC_SUBPROCS,
-        },
-    )
-
-
 @csrf_exempt
 @xframe_options_exempt  # allows rendering in Canvas|edx frame
 @require_lti_launch
 def lti_upload(request):
     # pick first configured subproc
     subproc_id = list(settings.HXARC_SUBPROCS)[0]
-    subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
-
-    global subproc_version
-    if subproc_version is None:
-        subproc_version = {}
-    if subproc_id not in subproc_version:
-        subproc_version[subproc_id] = get_subproc_version(subproc_conf["wrapper_path"])
-        logger.info(
-            "[{}] {} - version {}".format(
-                request.user.username, __name__, subproc_version
-            )
-        )
 
     # fetch or create lti user
     # edx studio does not send a proper lti request; missing username
@@ -80,8 +57,24 @@ def lti_upload(request):
     )
     login(request, user)
 
+    # return response from view upload_landing()
+    return upload_landing(request)
+
+
+@login_required
+def upload_landing(request):
+    # pick first configured subproc
+    subproc_id = list(settings.HXARC_SUBPROCS)[0]
+    subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
+    populate_subproc_version(subproc_id, subproc_conf)
+    logger.info(
+        "[{}] {} - version {}".format(
+            request.user.username, __name__, subproc_version
+        )
+    )
     form = get_class_object(subproc_conf["form_classname"])()
-    # newrun: set defaults into form
+
+    # render form for the first configured subproc
     return render(
         request,
         subproc_conf["form_template_path"],
@@ -93,7 +86,7 @@ def lti_upload(request):
             "subproc_name": subproc_conf["display_name"],
             "subproc_version": subproc_version[subproc_id],
             "input_filename_label": subproc_conf.get(
-                "display_label", "course export tarball (.tar.gz)"
+                "display_label", "course export tarbal (.tar.gz)"
             ),
             "exts_in_upload": json.dumps(
                 subproc_conf.get("exts_in_upload", [".tar.gz"])
@@ -109,16 +102,12 @@ def upload_file(request, subproc_id="sample"):
     else:
         subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
 
-    global subproc_version
-    if subproc_version is None:
-        subproc_version = {}
-    if subproc_id not in subproc_version:
-        subproc_version[subproc_id] = get_subproc_version(subproc_conf["wrapper_path"])
-        logger.info(
-            "[{}] {} - version {}".format(
-                request.user.username, __name__, subproc_version
-            )
+    populate_subproc_version(subproc_id, subproc_conf)
+    logger.info(
+        "[{}] {} - version {}".format(
+            request.user.username, __name__, subproc_version
         )
+    )
 
     if request.method != "POST":
         form = get_class_object(subproc_conf["form_classname"])()
@@ -312,6 +301,16 @@ def get_subproc_version(script_path):
     version = result.decode("utf-8", "ignore").strip()
     logger.debug("COMMAND[0]: ({}) -- result({})".format(command, version))
     return version
+
+
+def populate_subproc_version(subproc_id, subproc_conf):
+    """collects subproc version as subprocs are requested."""
+
+    global subproc_version
+    if subproc_version is None:
+        subproc_version = {}
+    if subproc_id not in subproc_version:
+        subproc_version[subproc_id] = get_subproc_version(subproc_conf["wrapper_path"])
 
 
 def render_error(request, subproc_id=None, msgs=[], status_code=500):
