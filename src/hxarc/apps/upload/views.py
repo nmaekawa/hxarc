@@ -6,12 +6,11 @@ import subprocess
 import uuid
 
 from django.conf import settings
-from django.contrib.auth import login
+from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.files.storage import FileSystemStorage
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -23,6 +22,11 @@ from hxarc.apps.hxlti.decorators import require_lti_launch
 # from hxarc.apps.upload.forms import UploadFileForm
 from hxarc.apps.upload.util import get_class_object, validate_filename
 
+# saml2 for hkey
+from onelogin.saml2.utils import OneLogin_Saml2_Utils
+from onelogin.saml2.auth import OneLogin_Saml2_Auth
+
+
 subproc_version = None
 logger = logging.getLogger(__name__)
 
@@ -31,9 +35,12 @@ logger = logging.getLogger(__name__)
 @xframe_options_exempt  # allows rendering in Canvas|edx frame
 @require_lti_launch
 def lti_upload(request):
-    # pick first configured subproc
-    subproc_id = list(settings.HXARC_SUBPROCS)[0]
+    """lti user login
 
+    expects to be requested as an lti 1.1 launch and logs in
+    lti user into django app. If all goes well, presents upload
+    landing page.
+    """
     # fetch or create lti user
     # edx studio does not send a proper lti request; missing username
     username = request.POST.get("lis_person_sourcedid", None)
@@ -46,16 +53,13 @@ def lti_upload(request):
         )
         return render_error(
             request,
-            subproc_id,
-            ["malformed lti request"],
+            subproc_id=None,
+            msgs=["malformed lti request"],
             status_code=401,
         )
 
     # login user
-    user, created = User.objects.get_or_create(
-        username=username, email="{}@hx.edu".format(username)
-    )
-    login(request, user)
+    hxarc_login_user(request, username)
 
     # return response from view upload_landing()
     return upload_landing(request)
@@ -334,3 +338,119 @@ def render_error(request, subproc_id=None, msgs=[], status_code=500):
         },
         status=status_code,
     )
+
+
+def prepare_django_request(request):
+    result = {
+        "https": "on" if request.is_secure() else "off",
+        "http_host": request.META["HTTP_X_FORWARDED-FOR"] \
+            if "HTTP_X_FORWARDED-FOR" in request.META else request.META["HTTP_HOST"],
+        "script_name": request.META["PATH_INFO"],
+        "get_data": request.GET.copy(),
+        "post_data": request.POST.copy(),
+    }
+    return result
+
+
+@csrf_exempt
+def saml(request):
+    """handles saml2 acs and slo endpoints."""
+
+    req = prepare_django_request(request)
+    auth = OneLogin_Saml2_Auth(req, custom_base_path=settings.SAML_FOLDER)
+
+    # request logout to hkey
+    if "slo" in req["get_data"]:
+        name_id = request.session.get("samlNameId", None)
+        session_index = request.session.get("samlSessionIndex", None)
+        name_id_format = request.session.get("samlNameIdFormat", None)
+        name_id_nq = request.session.get("samlNameIdNameQualifier", None)
+        name_id_spnq = request.session.get("samlNameIdSPNameQualifier", None)
+
+        # log user out!
+        logout(request)
+
+        return HttpResponseRedirect(
+            auth.logout(
+                name_id=name_id,
+                name_id_format=name_id_format,
+                session_index=session_index,
+                nq=name_id_nq,
+                spnq=name_id_spnq,
+            )
+        )
+    # login callback
+    elif "acs" in req["get_data"]:
+        auth = OneLogin_Saml2_Auth(req, custom_base_path=settings.SAML_FOLDER)
+        auth.process_response()
+        errors = auth.get_errors()
+        not_auth_warn = not auth.is_authenticated()
+
+        if not errors:
+            if "AuthNRequestID" in request.session:
+                del request.session["AuthNRequestID"]
+            request.session["samlUserdata"] = auth.get_attributes()
+            request.session["samlNameId"] = auth.get_nameid()
+            request.session["samlSessionIndex"] = auth.get_session_index()
+
+            # each attribute comes as a list!
+            username = request.session["samlUserdata"][settings.SAML_USERNAME_ATTR][0]
+            hxarc_login_user(request, username)
+
+            if "RelayState" in req["post_data"] \
+                and \
+                OneLogin_Saml2_Utils.get_self_url(req) != req["post_data"]["RelayState"]:
+                    return HttpResponseRedirect(
+                            auth.redirect_to(req["post_data"]["RelayState"])
+                    )
+            else:
+                return upload_landing(request)
+
+        else:
+            error_reason = auth.get_last_error_reason()
+            emsg = "errors: {}, error_reason: {}, not_auth_warn: {}".format(
+                errors, error_reason, not_auth_warn
+            )
+            logger.error(emsg)
+            if auth.get_settings().is_debug_active():
+                raise Exception(emsg)
+            else:
+                return render_error(
+                    request,
+                    msgs=[emsg],
+                    status_code=400,
+                )
+    else:
+        logger.error("saml2 unknown request({})".format(req["get_data"]))
+        raise HttpResponseNotFound()
+
+
+def hkey_upload(request):
+    """auth for hxarc upload
+
+    enforces authentication via hkey
+    dispatches the requested page to proper app
+    - expects that page starts with app name; e.g kondo_projects
+    """
+    req = prepare_django_request(request)
+
+    if not request.user.is_authenticated:
+        auth = OneLogin_Saml2_Auth(req, custom_base_path=settings.SAML_FOLDER)
+        return_to = "{}/".format(OneLogin_Saml2_Utils.get_self_url(req))
+        return HttpResponseRedirect(auth.login(return_to))
+    else:
+        return upload_landing(request)
+
+
+def hxarc_login_user(request, username):
+    # create/login user here!
+    UserModel = get_user_model()
+    user, created = UserModel._default_manager.get_or_create(username=username)
+    if created:  # make sure new users cannot login via admin ui
+        user.set_unusable_password()
+        user.is_staff = False
+        user.is_superuser = False
+        user.save()
+    login(request, user)
+
+

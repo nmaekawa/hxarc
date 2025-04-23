@@ -5,6 +5,9 @@ from hxarc.apps.upload import views
 
 urlpatterns = [
     path("launch/", views.lti_upload, name="launch"),
+    path("index/", views.hkey_upload, name="hkey"),
+    path("landing/", views.upload_landing, name="landing"),
+    path("saml/", views.saml, name="saml"),
     path("result/<slug:upload_id>/", views.download_result, name="result"),
 ]
 
