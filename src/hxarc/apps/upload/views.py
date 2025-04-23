@@ -16,7 +16,10 @@ from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
 
+from hxarc import __name__ as hxarc_name
 from hxarc import __version__ as hxarc_version
+from hxarc import vpal_version_comment as vpal_version_comment
+
 from hxarc.apps.hxlti.decorators import require_lti_launch
 
 # from hxarc.apps.upload.forms import UploadFileForm
@@ -30,6 +33,16 @@ from onelogin.saml2.auth import OneLogin_Saml2_Auth
 subproc_version = None
 logger = logging.getLogger(__name__)
 
+
+# version info
+def info(request):
+    return HttpResponse(
+        "{} v{} - {}".format(
+            hxarc_name,
+            hxarc_version,
+            vpal_version_comment,
+        )
+    )
 
 @csrf_exempt
 @xframe_options_exempt  # allows rendering in Canvas|edx frame

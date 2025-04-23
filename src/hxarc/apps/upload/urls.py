@@ -8,6 +8,7 @@ urlpatterns = [
     path("index/", views.hkey_upload, name="hkey"),
     path("landing/", views.upload_landing, name="landing"),
     path("saml/", views.saml, name="saml"),
+    path("info/", views.info, name="info"),
     path("result/<slug:upload_id>/", views.download_result, name="result"),
 ]
 
