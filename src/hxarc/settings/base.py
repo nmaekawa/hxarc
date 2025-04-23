@@ -234,7 +234,6 @@ if hxarc_subprocs:
 extra_subprocs = json.loads(os.environ.get("HXARC_SUBPROCS_EXTRA", "{}"))
 HXARC_SUBPROCS.update(extra_subprocs)
 
-
 # saml2 hkey
 # config for saml idp and sp
 SAML_FOLDER = os.environ.get("SAML_FOLDER", os.path.join(BASE_DIR, "saml"))
@@ -242,8 +241,8 @@ SAML_FOLDER = os.environ.get("SAML_FOLDER", os.path.join(BASE_DIR, "saml"))
 SAML_USERNAME_ATTR = os.environ.get("SAML_USERNAME_ATTR", "username")
 # path for acs, sls saml endpoints
 SAML_ACS_URL_PATH = os.environ.get("SAML_ACS_URL_PATH", "")
-# logout request
-HXARC_LOGOUT_URL = os.environ.get("HXARC_LOGOUT_URL", "hxarc/logout/")
 
-# ---
-LOGIN_URL = "/admin/login/"
+# obscure admin ui a bit
+HXARC_ADMIN_URL_PATH = os.environ.get("HXYDRA_ADMIN_URL_PATH", "admin/")
+# redefine login to admin login
+LOGIN_URL = "/{}/login/".format(HXARC_ADMIN_URL_PATH)
