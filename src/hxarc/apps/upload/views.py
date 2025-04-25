@@ -18,7 +18,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from hxarc import __name__ as hxarc_name
 from hxarc import __version__ as hxarc_version
-from hxarc import vpal_version_comment as vpal_version_comment
+from hxarc import vpal_version_comment
 
 from hxarc.apps.hxlti.decorators import require_lti_launch
 
@@ -394,7 +394,6 @@ def saml(request):
         )
     # login callback
     elif "acs" in req["get_data"]:
-        auth = OneLogin_Saml2_Auth(req, custom_base_path=settings.SAML_FOLDER)
         auth.process_response()
         errors = auth.get_errors()
         not_auth_warn = not auth.is_authenticated()
@@ -412,7 +411,8 @@ def saml(request):
 
             if "RelayState" in req["post_data"] \
                 and \
-                OneLogin_Saml2_Utils.get_self_url(req) != req["post_data"]["RelayState"]:
+                #OneLogin_Saml2_Utils.get_self_url(req) != req["post_data"]["RelayState"]:
+                request.get_full_path() != req["post_data"]["RelayState"]:
                     return HttpResponseRedirect(
                             auth.redirect_to(req["post_data"]["RelayState"])
                     )
@@ -435,7 +435,7 @@ def saml(request):
                 )
     else:
         logger.error("saml2 unknown request({})".format(req["get_data"]))
-        raise HttpResponseNotFound()
+        return HttpResponseNotFound()
 
 
 def hkey_upload(request):
@@ -449,7 +449,8 @@ def hkey_upload(request):
 
     if not request.user.is_authenticated:
         auth = OneLogin_Saml2_Auth(req, custom_base_path=settings.SAML_FOLDER)
-        return_to = "{}/".format(OneLogin_Saml2_Utils.get_self_url(req))
+        #return_to = "{}/".format(OneLogin_Saml2_Utils.get_self_url(req))
+        return_to = request.get_full_path()  # not sure if urlencoded
         return HttpResponseRedirect(auth.login(return_to))
     else:
         return upload_landing(request)
