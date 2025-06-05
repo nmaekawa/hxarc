@@ -233,3 +233,8 @@ if hxarc_subprocs:
 # this adds to hxarc_subprocs
 extra_subprocs = json.loads(os.environ.get("HXARC_SUBPROCS_EXTRA", "{}"))
 HXARC_SUBPROCS.update(extra_subprocs)
+
+
+# tries to obscure admin ui a bit
+HXARC_ADMIN_URL_PATH = os.environ.get("SERVICE_ADMIN_URL_PATH", "admin/")
+
