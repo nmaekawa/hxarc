@@ -18,9 +18,12 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+import hxarc.views as hxarc_views
+
 urlpatterns = [
     path(settings.HXARC_ADMIN_URL_PATH, admin.site.urls),
     path("upload/", include("hxarc.apps.upload.urls")),
+    path("info/", hxarc_views.info, name="info")
 ]
 
 if settings.DEBUG:
