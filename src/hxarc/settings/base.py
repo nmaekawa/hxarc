@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "hxarc.apps.hxlti",
+    "hxarc.apps.hkey",
     "hxarc.apps.upload",
     "corsheaders",
 ]
@@ -237,4 +238,13 @@ HXARC_SUBPROCS.update(extra_subprocs)
 
 # tries to obscure admin ui a bit
 HXARC_ADMIN_URL_PATH = os.environ.get("SERVICE_ADMIN_URL_PATH", "admin/")
+
+
+# config for saml idp and sp
+SAML_FOLDER = os.environ.get("SAML_FOLDER", os.path.join(BASE_DIR, "saml"))
+# which attribute to use as User username
+SAML_USERNAME_ATTR = os.environ.get("SAML_USERNAME_ATTR", "username")
+# path for acs, sls saml endpoints
+SAML_URL_PATH = os.environ.get("SAML_URL_PATH", "saml/")
+
 
