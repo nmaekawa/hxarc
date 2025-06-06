@@ -1,4 +1,4 @@
-# so it works with pytest
+import importlib.util
 import os
 
 from dotenv import load_dotenv
@@ -21,20 +21,18 @@ LOGGING["loggers"]["django.db"] = {
 
 # Django Extensions
 # http://django-extensions.readthedocs.org/en/latest/
-try:
-    import django_extensions
+spec = importlib.util.find_spec("django_extensions")
+if spec:
+    import django_extensions  # noqa
 
     INSTALLED_APPS += ["django_extensions"]
-except ImportError:
-    pass
 
 # Django Debug Toolbar
 # http://django-debug-toolbar.readthedocs.org/en/latest/
-try:
-    import debug_toolbar
+spec = importlib.util.find_spec("debug_toobar")
+if spec:
+    import debug_toolbar  # noqa
 
     INSTALLED_APPS += ["debug_toolbar"]
     MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
     DEBUG_TOOLBAR_PATCH_SETTINGS = True
-except ImportError:
-    pass

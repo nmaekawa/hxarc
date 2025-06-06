@@ -1,16 +1,21 @@
-
 import logging
 
 from django.conf import settings
-from django.contrib.auth import get_user_model, login as django_login, logout as django_logout
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
+from django.contrib.auth import get_user_model
+from django.contrib.auth import login as django_login
+from django.contrib.auth import logout as django_logout
+from django.http import (
+    HttpResponse,
+    HttpResponseNotFound,
+    HttpResponseRedirect,
+    HttpResponseServerError,
+)
 from django.views.decorators.csrf import csrf_exempt
-
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
 
 
-class HkeySaml():
+class HkeySaml:
     """saml2 config for python3-saml.
 
     keeps saml settings in class and don't read from file every login
@@ -53,22 +58,18 @@ def metadata(request):
     return resp
 
 
-def hkey_index(request, service_view, **kwargs):
+def hkey_index(request, **kwargs):
     """hkey landing view, enforces hkey auth to the service landing page
 
-    Expects a kwargs["service_view"] which is the view function to serve this request,
-    once the user is authenticated.
-
-    So, in urls.py, it would be something like:
+    Expects "service_view" in kwargs: view function to serve this request, once the user is authenticated.
+    In urls.py, it would be something like:
         path("myapp/<int:year>", hkey.views.hkey_index, {"service_view": myapp.views.landing_view})
     """
-    '''
     service_view = kwargs.get("service_view", None)
     if service_view is None:  # all calls are going to fail if this is not set!!!!
         return HttpResponseServerError(
             content="unable to find service_view to return".encode("utf-8")
         )
-    '''
 
     req = prepare_django_request(request)
     if not request.user.is_authenticated:
@@ -76,25 +77,21 @@ def hkey_index(request, service_view, **kwargs):
         return_to = request.get_full_path()
         return HttpResponseRedirect(auth.login(return_to))
     else:
-        # should remove service_view from kwargs?
+        del kwargs["service_view"]
         return service_view(request, *kwargs)
 
 
 @csrf_exempt
-def saml(request, service_view, **kwargs):
+def saml(request, **kwargs):
     """handles saml2 acs and slo endpoints.
 
-    Expects a kwargs["service_view"] which is the view function to serve this request,
-    once the user is authenticated.
-    see hkey_index() comment for how to set this kwarg.
+    see hkey_index() comment for how to set arg "service_view"
     """
-    '''
     service_view = kwargs.get("service_view", None)
     if service_view is None:  # all calls are going to fail if this is not set!!!!
         return HttpResponseServerError(
             content="unable to find service_view to return".encode("utf-8")
         )
-    '''
 
     req = prepare_django_request(request)
     auth = HkeySaml.get_auth(req)
@@ -136,17 +133,22 @@ def saml(request, service_view, **kwargs):
             username = request.session["samlUserdata"][settings.SAML_USERNAME_ATTR][0]
             service_login_user(request, username)
 
-            if "RelayState" in req["post_data"] \
-                    and \
-                    request.get_full_path() != req["post_data"]["RelayState"]:
-                return HttpResponseRedirect(auth.redirect_to(req["post_data"]["RelayState"]))
+            if (
+                "RelayState" in req["post_data"]
+                and request.get_full_path() != req["post_data"]["RelayState"]
+            ):
+                return HttpResponseRedirect(
+                    auth.redirect_to(req["post_data"]["RelayState"])
+                )
             else:
                 # return landing page
+                del kwargs["service_view"]
                 return service_view(request, *kwargs)
-
         else:
             error_reason = auth.get_last_error_reason()
-            msg = "errors: {}, error_reason: {}, not_auth_warn: {}".format(errors, error_reason, not_auth_warn)
+            msg = "errors: {}, error_reason: {}, not_auth_warn: {}".format(
+                errors, error_reason, not_auth_warn
+            )
             logging.getLogger(__name__).error(msg)
             if auth.get_settings().is_debug_active():
                 raise Exception(msg)
@@ -157,7 +159,9 @@ def saml(request, service_view, **kwargs):
                     )
                 )
     else:
-        logging.getLogger(__name__).error("saml2 unknown request({})".format(req["get_data"]))
+        logging.getLogger(__name__).error(
+            "saml2 unknown request({})".format(req["get_data"])
+        )
         return HttpResponseNotFound()
 
 
@@ -176,11 +180,13 @@ def service_login_user(request, username):
 def prepare_django_request(request):
     result = {
         "https": "on" if request.is_secure() else "off",
-        "http_host": request.META["HTTP_X_FORWARDED-FOR"] \
-            if "HTTP_X_FORWARDED-FOR" in request.META else request.META["HTTP_HOST"],
+        "http_host": (
+            request.META["HTTP_X_FORWARDED-FOR"]
+            if "HTTP_X_FORWARDED-FOR" in request.META
+            else request.META["HTTP_HOST"]
+        ),
         "script_name": request.META["PATH_INFO"],
         "get_data": request.GET.copy(),
         "post_data": request.POST.copy(),
     }
     return result
-

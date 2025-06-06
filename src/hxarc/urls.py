@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 import os
 
 from django.conf import settings
@@ -20,10 +21,9 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-import hxarc.views as hxarc_views
 import hxarc.apps.hkey.views as hkey_views
 import hxarc.apps.upload.views as upload_views
-
+import hxarc.views as hxarc_views
 
 urlpatterns = [
     path(settings.HXARC_ADMIN_URL_PATH, admin.site.urls),

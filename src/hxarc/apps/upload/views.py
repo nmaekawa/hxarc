@@ -68,9 +68,7 @@ def upload_landing(request):
     subproc_conf = settings.HXARC_SUBPROCS[subproc_id]
     populate_subproc_version(subproc_id, subproc_conf)
     logger.info(
-        "[{}] {} - version {}".format(
-            request.user.username, __name__, subproc_version
-        )
+        "[{}] {} - version {}".format(request.user.username, __name__, subproc_version)
     )
     form = get_class_object(subproc_conf["form_classname"])()
 
@@ -104,9 +102,7 @@ def upload_file(request, subproc_id="sample"):
 
     populate_subproc_version(subproc_id, subproc_conf)
     logger.info(
-        "[{}] {} - version {}".format(
-            request.user.username, __name__, subproc_version
-        )
+        "[{}] {} - version {}".format(request.user.username, __name__, subproc_version)
     )
 
     if request.method != "POST":

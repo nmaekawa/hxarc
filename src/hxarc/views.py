@@ -1,4 +1,3 @@
-
 from django.http import HttpResponse
 
 from hxarc import __name__ as hxarc_name
@@ -15,4 +14,3 @@ def info(request):
             vpal_version_comment,
         )
     )
-

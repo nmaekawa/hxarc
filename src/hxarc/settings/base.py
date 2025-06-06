@@ -246,5 +246,3 @@ SAML_FOLDER = os.environ.get("SAML_FOLDER", os.path.join(BASE_DIR, "saml"))
 SAML_USERNAME_ATTR = os.environ.get("SAML_USERNAME_ATTR", "username")
 # path for acs, sls saml endpoints
 SAML_URL_PATH = os.environ.get("SAML_URL_PATH", "saml/")
-
-

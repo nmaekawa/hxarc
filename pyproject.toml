@@ -40,6 +40,28 @@ version = {attr = "hxarc.__version__"}
 
 [tool.isort]
 profile = "black"
+skip = [
+        "migrations",
+        "__pypackages__",
+        ".pants.d",
+        ".tox",
+        "build",
+        ".venv",
+        "_build",
+        ".eggs",
+        ".mypy_cache",
+        ".nox",
+        "dist",
+        "buck-out",
+        ".svn",
+        ".direnv",
+        "venv",
+        "node_modules",
+        ".bzr",
+        ".pytype",
+        ".hg",
+        ".git"
+]
 
 [tool.black]
 target-version = ["py312"]
@@ -51,6 +73,7 @@ exclude = '''
     | \.venv
     | build
     | dist
+    | migrations
 )/
 '''
 
