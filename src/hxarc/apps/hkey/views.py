@@ -129,9 +129,18 @@ def saml(request, **kwargs):
             request.session["samlNameId"] = auth.get_nameid()
             request.session["samlSessionIndex"] = auth.get_session_index()
 
-            # each attribute comes as a list!
-            username = request.session["samlUserdata"][settings.SAML_USERNAME_ATTR][0]
-            service_login_user(request, username)
+            fname = None
+            lname = None
+            try:  # try to get first/last name
+                if settings.SAML_FNAME_ATTR and settings.SAML_LNAME_ATTR:
+                    # each attribute comes as a list!
+                    fname = request.session["samlUserdata"][settings.SAML_FNAME_ATTR][0]
+                    lname = request.session["samlUserdata"][settings.SAML_LNAME_ATTR][0]
+            except Exception:
+                pass
+
+            username = request.session.get("samlNameId")
+            service_login_user(request, username, fname=fname, lname=lname)
 
             if (
                 "RelayState" in req["post_data"]
@@ -165,7 +174,7 @@ def saml(request, **kwargs):
         return HttpResponseNotFound()
 
 
-def service_login_user(request, username):
+def service_login_user(request, username, fname=None, lname=None):
     """get or create user, then logs them in."""
     UserModel = get_user_model()
     user, created = UserModel._default_manager.get_or_create(username=username)
@@ -173,6 +182,9 @@ def service_login_user(request, username):
         user.set_unusable_password()
         user.is_staff = False
         user.is_superuser = False
+        if fname and lname:
+            user.first_name = fname
+            user.last_name = lname
         user.save()
     django_login(request, user)
 

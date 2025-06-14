@@ -242,7 +242,8 @@ HXARC_ADMIN_URL_PATH = os.environ.get("SERVICE_ADMIN_URL_PATH", "admin/")
 
 # config for saml idp and sp
 SAML_FOLDER = os.environ.get("SAML_FOLDER", os.path.join(BASE_DIR, "saml"))
-# which attribute to use as User username
-SAML_USERNAME_ATTR = os.environ.get("SAML_USERNAME_ATTR", "username")
+# which attribute to get fullname for user
+SAML_FNAME_ATTR = os.environ.get("SAML_FNAME_ATTR", None)
+SAML_LNAME_ATTR = os.environ.get("SAML_LNAME_ATTR", None)
 # path for acs, sls saml endpoints
 SAML_URL_PATH = os.environ.get("SAML_URL_PATH", "saml/")
