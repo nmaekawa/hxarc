@@ -21,7 +21,9 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-import hxarc.apps.hkey.views as hkey_views
+# import hxarc.apps.hkey.views as hkey_views
+from django_vkey import views as vkey_views
+
 import hxarc.apps.upload.views as upload_views
 import hxarc.views as hxarc_views
 
@@ -31,18 +33,18 @@ urlpatterns = [
     path("info/", hxarc_views.info, name="info"),
     path(
         "index/",
-        hkey_views.hkey_index,
+        vkey_views.hkey_index,
         {"service_view": upload_views.upload_landing},
         name="index",
     ),
     path(
         os.path.join(settings.SAML_URL_PATH, "metadata/"),
-        hkey_views.metadata,
+        vkey_views.metadata,
         name="saml_metadata",
     ),
     path(
         settings.SAML_URL_PATH,
-        hkey_views.saml,
+        vkey_views.saml,
         {"service_view": upload_views.upload_landing},
         name="saml",
     ),

@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "hxarc.apps.hxlti",
-    "hxarc.apps.hkey",
+    # "hxarc.apps.hkey",
+    "django_vkey",
     "hxarc.apps.upload",
     "corsheaders",
 ]
@@ -247,3 +248,7 @@ SAML_FNAME_ATTR = os.environ.get("SAML_FNAME_ATTR", None)
 SAML_LNAME_ATTR = os.environ.get("SAML_LNAME_ATTR", None)
 # path for acs, sls saml endpoints
 SAML_URL_PATH = os.environ.get("SAML_URL_PATH", "saml/")
+
+# login url, for when redirecting to login
+# workaround for now jun25
+LOGIN_URL = "/index/"

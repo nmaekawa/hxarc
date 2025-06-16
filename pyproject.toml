@@ -12,15 +12,7 @@ authors = [
 description = "webapp to run 3rd party scripts"
 readme = "README.md"
 requires-python = ">=3.12"
-dynamic = ["version"]
-dependencies = [
-    "django==4.2.20",
-    "django-cors-headers==4.7.0",
-    "lti>=0.9.5",
-    "python_dotenv==1.1.0",
-    "python3-saml==1.16.0",
-    "redis==6.0.0",
-]
+dynamic = ["version", "dependencies"]
 
 [project.optional-dependencies]
 test = [
@@ -36,6 +28,7 @@ test = [
 
 [tool.setuptools.dynamic]
 version = {attr = "hxarc.__version__"}
+dependencies = {file = "requirements.txt"}
 
 
 [tool.isort]
