@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "hxarc.apps.hxlti",
-    # "hxarc.apps.hkey",
     "django_vkey",
     "hxarc.apps.upload",
     "corsheaders",
