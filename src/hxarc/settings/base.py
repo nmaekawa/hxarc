@@ -190,6 +190,7 @@ SESSION_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ["https://{}".format(x) for x in ALLOWED_HOSTS]
 
 # normalize uploaded files (differentiate via subdir under MEDIA_ROOT)
 HXARC_UPLOAD_FILENAME = os.environ.get("HXARC_UPLOAD_FILENAME", "export")
